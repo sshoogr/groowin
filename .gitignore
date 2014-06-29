@@ -1,0 +1,19 @@
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# Build Files #
+bin
+.gradle
+.DS_Store
+build
+
+# IDE files #
+*.iml
+*.ipr
+*.iws
+.idea
+out

@@ -19,8 +19,8 @@ apply from: 'repos.gradle'
 apply from: 'sonar.gradle'
 apply from: 'docs.gradle'
 
-sourceCompatibility = '1.6'
-targetCompatibility = '1.6'
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
 
 compileGroovy {
   options.compilerArgs << '-Xlint:-options'
@@ -67,4 +67,10 @@ task integration(type:Test) {
   description = "Run integration tests (located in src/integrationTest/groovy)."
   testClassesDir = project.sourceSets.integrationTest.output.classesDir
   classpath = project.sourceSets.integrationTest.runtimeClasspath
+}
+
+idea {
+  module {
+    testSourceDirs += file('src/integrationTest/groovy')
+  }
 }

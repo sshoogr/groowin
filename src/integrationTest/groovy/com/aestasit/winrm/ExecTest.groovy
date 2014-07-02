@@ -1,34 +1,8 @@
 package com.aestasit.winrm
 
-import com.aestasit.winrm.dsl.WinRMDslEngine
-import com.aestasit.winrm.log.SysOutLogger
-import org.junit.BeforeClass
 import org.junit.Test
 
-class ExecTest {
-  static WinRMOptions options
-  static WinRMDslEngine engine
-
-  @BeforeClass
-  def static void defineOptions() {
-    options = new WinRMOptions()
-    options.with {
-      defaultHost = '192.168.56.101'
-      defaultUser = 'vagrant'
-      defaultPassword = 'vagrant'
-      defaultPort = 5985
-
-      execOptions.with {
-        showOutput = false
-        failOnError = true
-      }
-
-      verbose = true
-      logger = new SysOutLogger()
-    }
-    engine = new WinRMDslEngine(options)
-  }
-
+class ExecTest extends BaseIntegrationTest {
   @Test
   void testTypeHostsFile() {
     engine.remoteSession {
@@ -39,8 +13,8 @@ class ExecTest {
   @Test
   void testCommandCreateFile() {
     engine.remoteSession {
-      exec('echo.', 'This is a test string in a test file','>','c:\\temp\\test.file')
-      exec('del', 'c:\\temp\\test.file')
+      exec('echo.', 'This is a test string in a test file','>','c:\\temp\\testEcho.file')
+      exec('del', 'c:\\temp\\testEcho.file')
     }
   }
 
@@ -67,4 +41,3 @@ class ExecTest {
     }
   }
 }
-

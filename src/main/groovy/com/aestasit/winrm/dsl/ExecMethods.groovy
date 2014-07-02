@@ -18,8 +18,9 @@ package com.aestasit.winrm.dsl
 
 import com.aestasit.winrm.ExecOptions
 import com.aestasit.winrm.WinRMException
-import com.xebialabs.overthere.*
-import com.xebialabs.overthere.util.*
+import com.xebialabs.overthere.CmdLine
+import com.xebialabs.overthere.OverthereConnection
+import com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler
 
 /**
  * Mix-in class for SessionDelegate implementing EXEC functionality.

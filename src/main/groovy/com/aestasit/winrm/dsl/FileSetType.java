@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package com.aestasit.winrm
+package com.aestasit.winrm.dsl;
 
 /**
- * Generic exception to be thrown in exceptional situations.
- *
+ * File type depending on the placement - on the local or remote machine
+ * <p>
  * @author Andrey Adamovich
- *
  */
-public class WinRMException extends RuntimeException {
-
-  WinRMException(String message, Throwable cause) {
-    super(message, cause)
-  }
-
-  WinRMException(String message) {
-    super(message)
-  }
+public enum FileSetType {
+  UNKNOWN, LOCAL, REMOTE;
 }

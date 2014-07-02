@@ -20,12 +20,15 @@ import com.aestasit.winrm.WinRMException
 import com.aestasit.winrm.WinRMOptions
 import com.aestasit.winrm.log.Logger
 import com.aestasit.winrm.log.Slf4jLogger
-import com.xebialabs.overthere.*
+import com.xebialabs.overthere.ConnectionOptions
+import com.xebialabs.overthere.Overthere
+import com.xebialabs.overthere.OverthereConnection
 
 import static com.xebialabs.overthere.ConnectionOptions.*
 import static com.xebialabs.overthere.OperatingSystemFamily.WINDOWS
-import static com.xebialabs.overthere.cifs.CifsConnectionBuilder.*
-import static com.xebialabs.overthere.cifs.CifsConnectionType.*
+import static com.xebialabs.overthere.cifs.CifsConnectionBuilder.CIFS_PROTOCOL
+import static com.xebialabs.overthere.cifs.CifsConnectionBuilder.CONNECTION_TYPE
+import static com.xebialabs.overthere.cifs.CifsConnectionType.WINRM_INTERNAL
 
 /**
  * Closure delegate that is used to collect WinRM options from all and give access to other DSL delegates.

@@ -16,8 +16,13 @@
 
 package com.aestasit.winrm.dsl
 
+import com.xebialabs.overthere.OverthereConnection
+import com.xebialabs.overthere.OverthereFile
+
+import static org.apache.commons.io.FilenameUtils.separatorsToWindows
+
 /**
- * This class represents a remote file and it gives some methods to access file's content.
+ * This class represents a remote file providing methods to access file's content.
  *
  * @author Sergey Korenko
  *
@@ -33,110 +38,79 @@ class RemoteFile {
   }
 
   String getText() {
-    File tempFile = File.createTempFile(this.getClass().getPackage().name, "txt")
-    try {
-      delegate.copying {
-        from { remoteFile destination }
-        into { localFile tempFile }
-      }
-      return tempFile.text
-    } finally {
-      tempFile.delete()
+    String content = null
+
+    delegate.cifsConnection { OverthereConnection connection ->
+      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+      content = remoteFile.inputStream.text
     }
+
+    content
   }
 
   void setText(String text) {
-    File tempFile = File.createTempFile(this.getClass().getPackage().name, "txt")
-    text.eachLine { line ->
-      tempFile << "${line.trim()}\n"
-    }
-    try {
-      delegate.copying {
-        from { localFile(tempFile) }
-        into { remoteFile(destination) }
-      }
-    } finally {
-      tempFile.delete()
+    delegate.cifsConnection { OverthereConnection connection ->
+      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+      remoteFile.outputStream << text
     }
   }
-//
-//  void touch() {
-////    delegate.exec(command: 'touch ' + this.destination, failOnError: true, showOutput: true)
-//  }
-//
-//
-//  String getOwner() {
-//    int uid
-//    delegate.sftpChannel { ChannelSftp channel ->
-//      SftpATTRS attr = channel.stat( this.destination)
-//      uid =  attr.getUId()
-//    }
-//
-//    delegate.exec("getent passwd ${uid} | cut -d: -f1").output.trim()
-//  }
-//
-//  /*
-//For folders:
-//  takeown /f folder_name /r /d y
-//  icacls folder_name /grant username_or_usergroup:F /t /q
-//For files:
-//  takeown /f file_name /d y
-//  icacls file_name /grant username_or_usergroup:F /q
-//   */
-//  // takeown /f folder_name /r /d y
-//  // icacls folder_name /grant username_or_usergroup:F /t /q
-//  void setOwner(String user) {
-//  }
-//
-//  String getGroup() {
-//  }
-//
-//  void setGroup(String group) {
-//  }
-//
-//  void setPermissions(int mask) {
-//    delegate.sftpChannel { ChannelSftp channel ->
-//      // Convert the mask from octal to decimal
-//      // ChannelSftp requires decimal format
-//      channel.chmod(Integer.parseInt(mask.toString(),8), this.destination)
-//    }
-//  }
-//
-//  int getPermissions() {
-//    int mask
-//    delegate.sftpChannel { ChannelSftp channel ->
-//      SftpATTRS attr = channel.stat( this.destination)
-//      // Convert back to octal
-//      mask = Integer.toOctalString(attr.getPermissions()).toInteger()-100000
-//    }
-//    mask
-//  }
-//
-//  /**
-//   * Get the uid of a user
-//   * @param user user
-//   * @return an Integer representing the uid
-//   * or null if the user is not found
-//   */
-//  private Integer getUid(String user) {
-//    resolveId(delegate.exec("id -u ${user}"))
-//  }
-//  /**
-//   * Get the gid of a group
-//   * @param group group name
-//   * @return an Integer representing the gid
-//   * or null if the group is not found
-//   */
-//  private Integer getGid(String group) {
-//    resolveId(delegate.exec("getent group ${group} | cut -d: -f3"))
-//  }
-//
-//  private Integer resolveId(out) {
-//    if (out.output.isInteger()) {
-//      return  out.output.toInteger()
-//    }
-//    return null
-//  }
-//
-//
+
+  void saveEmpty() {
+    delegate.exec('echo.', '>', destination)
+  }
+
+  boolean canRead() {
+    boolean readable = false
+
+    delegate.cifsConnection { OverthereConnection connection ->
+      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+      readable = remoteFile.canRead()
+    }
+
+    readable
+  }
+
+  boolean canWrite() {
+    boolean writable = false
+
+    delegate.cifsConnection { OverthereConnection connection ->
+      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+      writable = remoteFile.canWrite()
+    }
+
+    writable
+  }
+
+  boolean isHidden() {
+    boolean hidden = false
+
+    delegate.cifsConnection { OverthereConnection connection ->
+      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+      hidden = remoteFile.isHidden()
+    }
+
+    hidden
+  }
+
+  long lastModified() {
+    long lastModified = 0l
+
+    delegate.cifsConnection { OverthereConnection connection ->
+      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+      lastModified = remoteFile.lastModified()
+    }
+
+    lastModified
+  }
+
+  long length() {
+    long length = 0l
+
+    delegate.cifsConnection { OverthereConnection connection ->
+      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+      length = remoteFile.length()
+    }
+
+    length
+  }
 }

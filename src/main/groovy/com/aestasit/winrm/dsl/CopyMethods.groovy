@@ -17,10 +17,10 @@
 package com.aestasit.winrm.dsl
 
 import com.aestasit.winrm.WinRMException
-import com.xebialabs.overthere.*
+import com.xebialabs.overthere.OverthereConnection
+import com.xebialabs.overthere.OverthereFile
 
 import static com.aestasit.winrm.dsl.FileSetType.*
-import static org.apache.commons.codec.digest.DigestUtils.*
 import static org.apache.commons.io.FilenameUtils.*
 
 /**
@@ -38,20 +38,26 @@ import static org.apache.commons.io.FilenameUtils.*
 class CopyMethods {
 
   /**
-   * Copies file from a local machine to a remote machine represented by file names
+   * Copies file defined by file path from a local machine to a remote machine represented by file path
    *
    * @param sourceFile string points to the file on a machine from which script is run
    * @param dst name of the directory where to place a source file of a remote machine
    */
-  def copying(String sourceFile, String dst) {
+  def cp(String sourceFile, String dst) {
     if (options.verbose) {
       logger.debug("Copy local file represented by string $sourceFile to remote folder represented by string $dst")
     }
 
-    copying(new File(sourceFile), dst)
+    cp(new File(sourceFile), dst)
   }
 
-  def copying(File sourceFile, String dst) {
+  /**
+   * Copies <code>File</code> instance from a local machine to a remote machine represented by file path
+   *
+   * @param sourceFile string points to the file on a machine from which script is run
+   * @param dst name of the directory where to place a source file of a remote machine
+   */
+  def cp(File sourceFile, String dst) {
     if (options.verbose) {
       logger.debug("Copy local file represented by File object with path $sourceFile to remote folder represented by string $dst")
     }
@@ -66,7 +72,7 @@ class CopyMethods {
     }
   }
 
-  def copying(Closure cl) {
+  def cp(Closure cl) {
     if (options.verbose) {
       logger.debug("Copying with closure")
     }

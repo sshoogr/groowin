@@ -18,8 +18,8 @@ package com.aestasit.winrm.log
 
 interface Logger {
 
-  def void info(String message)
-  def void warn(String message)
-  def void debug(String message)
+  void info(String message)
+  void warn(String message)
+  void debug(String message)
   
 }

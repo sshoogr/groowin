@@ -56,7 +56,7 @@ class DefaultWinRM {
     options.getCopyOptions()
   }
 
-  def scpOptions(Closure cl) {
+  static copyOptions(Closure cl) {
     options.copyOptions(cl)
   }
 

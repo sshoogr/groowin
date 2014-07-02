@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2013 Aestas/IT
+ * Copyright (C) 2011-2014 Aestas/IT
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,3 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package com.aestasit.winrm.dsl
+
+/**
+ * File type depending on the placement - on the local or remote machine
+ * <p>
+ * @author Andrey Adamovich
+ */
+public enum FileSetType {
+  UNKNOWN, LOCAL, REMOTE
+}

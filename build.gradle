@@ -1,11 +1,11 @@
 
-group = 'com.aestasit.groovy'
-version = '0.1-SNAPSHOT'
+group = 'com.aestasit.infrastructure.groowin'
+version = '0.1.1-SNAPSHOT'
 
 buildscript {
   repositories { mavenCentral() }
   dependencies { classpath 'net.saliman:gradle-cobertura-plugin:2.0.0' }
-  dependencies { classpath 'org.ajoberstar:gradle-git:0.6.3' }
+  dependencies { classpath 'org.ajoberstar:gradle-git:0.8.0' }
 }
 
 apply plugin: 'groovy'
@@ -22,20 +22,49 @@ apply from: 'docs.gradle'
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
 
+compileGroovy {
+  options.compilerArgs << '-Xlint:-options'
+}
+
+configure(allprojects) {
+  ext.groovyVersion  = '2.2.1'
+  ext.slf4jVersion   = '1.7.7'
+  ext.logbackVersion = '1.0.13'
+}
+
 dependencies {
-  compile localGroovy()  
-  testCompile 'commons-io:commons-io:1.4'
+  compile "org.codehaus.groovy:groovy-all:${groovyVersion}"
+  compile "org.slf4j:slf4j-api:${slf4jVersion}"
+  compile "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+  compile "ch.qos.logback:logback-classic:${logbackVersion}"
+  compile 'commons-io:commons-io:1.4'
+  compile 'commons-codec:commons-codec:1.9'
+  compile 'com.xebialabs.overthere:overthere:2.4.3'
   testCompile 'junit:junit:4.11'
-  testRuntime 'ch.qos.logback:logback-core:1.0.7'
-  testRuntime 'ch.qos.logback:logback-classic:1.0.7'
+  testCompile 'com.aestasit.infrastructure.mock:groovy-sshd-mock:0.3'
+}
+
+sourceSets {
+  integrationTest {
+    compileClasspath += main.output + test.output
+    runtimeClasspath += main.output + test.output
+  }
 }
 
 configurations {
   all*.exclude group: 'commons-logging'
   all*.exclude group: 'log4j'
   all*.exclude module: 'slf4j-simple'
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
 }
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '1.8'
+  gradleVersion = '1.12'
+}
+
+task integration(type:Test) {
+  description = "Run integration tests (located in src/integrationTest/groovy)."
+  testClassesDir = project.sourceSets.integrationTest.output.classesDir
+  classpath = project.sourceSets.integrationTest.runtimeClasspath
 }

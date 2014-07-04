@@ -14,14 +14,20 @@ The library was jointly developed by **Aestas/IT** (http://aestasit.com) and **N
 
 The easiest way to use `groowin` in a **Groovy** script is by importing the dependency using [Grape](http://groovy.codehaus.org/Grape).
 
-    @Grab('com.aestasit.infrastructure.groowin:groowin:0.1')
+    @Grab('com.aestasit.infrastructure.groowin:groowin:0.1.2')
     import static com.aestasit.winrm.DefaultWinRM.*
 
-The entry point for using the **DSL** is the `remoteSession` method, which accepts an **WinRM** **URL** and a closure with **Groovy** or **DSL** code:
+The entry point for using the **DSL** is the `remoteManagement` method, which accepts a closure with **Groovy** or **DSL** code:
 
-    remoteSession('user2:654321@localhost:2222') {
-      exec 'del C:\\temp.txt'
+    remoteManagement {
+      
+      host     = '127.0.0.1'
+      user     = 'Administrator'
+      password = 'secret'
+      
+      exec 'del', 'C:\\temp.txt'
       remoteFile('C:\\my.conf').text = "enabled=true"
+      
     }
 
 For more use cases, please refer to the following sections or to the `examples` folder in this repository.

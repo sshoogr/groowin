@@ -24,6 +24,8 @@ import com.xebialabs.overthere.ConnectionOptions
 import com.xebialabs.overthere.Overthere
 import com.xebialabs.overthere.OverthereConnection
 
+import java.util.regex.Pattern
+
 import static com.xebialabs.overthere.ConnectionOptions.*
 import static com.xebialabs.overthere.OperatingSystemFamily.WINDOWS
 import static com.xebialabs.overthere.cifs.CifsConnectionBuilder.CIFS_PROTOCOL
@@ -32,7 +34,7 @@ import static com.xebialabs.overthere.cifs.CifsConnectionType.WINRM_INTERNAL
 import static groovy.lang.Closure.DELEGATE_FIRST
 
 /**
- * Closure delegate that is used to collect WinRM options from all and give access to other DSL delegates.
+ * Closure delegate that is used to collect all WinRM options and give access to other DSL delegates.
  *
  * @author Andrey Adamovich
  */
@@ -40,6 +42,7 @@ import static groovy.lang.Closure.DELEGATE_FIRST
 class SessionDelegate {
 
   private static final int DEFAULT_WINRM_PORT = 5985
+  private static final Pattern WINRM_URL = ~/^(([^:@]+)(:([^@]+))?@)?([^:]+)(:(\d+))?$/
 
   private String     host           = null
   private int        port           = DEFAULT_WINRM_PORT
@@ -105,6 +108,54 @@ class SessionDelegate {
       connection.close()
     }
 
+  }
+
+  String getHost() {
+    host
+  }
+
+  int getPort() {
+    port
+  }
+
+  String getUser() {
+    username
+  }
+
+  String getPassword() {
+    password
+  }
+
+  void setHost(String host) {
+    this.host = host
+  }
+
+  void setPort(int port) {
+    this.port = port
+  }
+
+  void setUser(String username) {
+    this.username = username
+  }
+
+  void setPassword(String password) {
+    this.password = password
+  }
+
+  void setUrl(String url) {
+    def matcher = WINRM_URL.matcher(url)
+    if (matcher.matches()) {
+      setHost(matcher.group(5))
+      if (matcher.group(7)) {
+        setPort(matcher.group(7).toInteger())
+      } else {
+        setPort(DEFAULT_WINRM_PORT)
+      }
+      setUser(matcher.group(2))
+      setPassword(matcher.group(4))
+    } else {
+      throw new MalformedURLException("Unknown URL format: " + url)
+    }
   }
 
 }

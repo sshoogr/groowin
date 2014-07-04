@@ -39,11 +39,24 @@ class WinRMDslEngine {
     executeSession(cl, null, null)
   }
 
+  def remoteManagement(String url, @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl) {
+    remoteManagement(url, null, cl)
+  }
+
+  def remoteManagement(String url, Object context, @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl) {
+    executeSession(cl, context) { SessionDelegate sessionDelegate ->
+      sessionDelegate.url = url
+    }
+  }
+
   private executeSession(@DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl, Object context, @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure configure) {
     def result = null
     if (cl) {
       if (delegate == null) {
         delegate = new SessionDelegate(options)
+      }
+      if (configure != null) {
+        configure(delegate)
       }
       cl.delegate = delegate
       cl.resolveStrategy = DELEGATE_FIRST

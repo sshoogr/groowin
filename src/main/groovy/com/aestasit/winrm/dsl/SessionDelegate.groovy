@@ -29,6 +29,7 @@ import static com.xebialabs.overthere.OperatingSystemFamily.WINDOWS
 import static com.xebialabs.overthere.cifs.CifsConnectionBuilder.CIFS_PROTOCOL
 import static com.xebialabs.overthere.cifs.CifsConnectionBuilder.CONNECTION_TYPE
 import static com.xebialabs.overthere.cifs.CifsConnectionType.WINRM_INTERNAL
+import static groovy.lang.Closure.DELEGATE_FIRST
 
 /**
  * Closure delegate that is used to collect WinRM options from all and give access to other DSL delegates.
@@ -63,19 +64,16 @@ class SessionDelegate {
     }
   }
 
-  // todo
   RemoteFile remoteFile(String destination) {
     new RemoteFile(this, destination)
   }
 
-  // todo currently for any operation
-  // a new connection is created
-  // It is reasonable to create single connection and use it for all operation inside <remoteSession>
-  //
-  public void cifsConnection(Closure cl) {
-    if (options.verbose) {
-      logger.debug("Initialization of CIFS connection to execute remote file processing or command execution")
-    }
+  // TODO: currently for any operation a new connection is created
+  // It is reasonable to create single connection and use it for all operation inside <remoteManagement>
+  // Implement it in the same way as for sshoogr (connection control happens in the engine)
+
+
+  def cifsConnection(@DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl) {
 
     if (host == null) {
       throw new WinRMException("Host is required.")
@@ -98,10 +96,15 @@ class SessionDelegate {
 
     OverthereConnection connection = Overthere.getConnection(CIFS_PROTOCOL, otherthereOptions)
 
+    cl.delegate = this
+    cl.resolveStrategy = DELEGATE_FIRST
+
     try {
       cl(connection)
     } finally {
       connection.close()
     }
+
   }
+
 }

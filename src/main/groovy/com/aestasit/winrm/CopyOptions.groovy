@@ -16,7 +16,15 @@
 
 package com.aestasit.winrm
 
+/**
+ * Configuration object holding options used for CIFS (remote file copying) functionality.
+ *
+ * @author Andrey Adamovich
+ *
+ */
+
 class CopyOptions extends CommonOptions {
+
   CopyOptions() {
   }
 
@@ -31,4 +39,5 @@ class CopyOptions extends CommonOptions {
   CopyOptions(CopyOptions opt1, Map opt2) {
     this.failOnError = setValue(opt2?.failOnError, opt1?.failOnError, true)
   }
+
 }

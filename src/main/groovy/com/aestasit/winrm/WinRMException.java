@@ -24,11 +24,11 @@ package com.aestasit.winrm;
  */
 public class WinRMException extends RuntimeException {
 
-  WinRMException(String message, Throwable cause) {
+  public WinRMException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  WinRMException(String message) {
+  public WinRMException(String message) {
     super(message);
   }
 }

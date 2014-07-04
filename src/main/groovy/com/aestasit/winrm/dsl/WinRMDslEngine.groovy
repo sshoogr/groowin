@@ -18,12 +18,16 @@ package com.aestasit.winrm.dsl
 
 import com.aestasit.winrm.WinRMOptions
 
+import static groovy.lang.Closure.DELEGATE_FIRST
+
 /**
- * The class is responsible for 
- * <p>
- * Created by Sergey Korenko on 24.06.14.
+ * WinRM DSL entry-point class that gives access to SessionDelegate instance.
+ *
+ * @author Andrey Adamovich
+ *
  */
 class WinRMDslEngine {
+
   private final WinRMOptions options
   private SessionDelegate delegate
 
@@ -31,23 +35,21 @@ class WinRMDslEngine {
     this.options = options
   }
 
-  def remoteSession(Closure cl) {
+  def remoteManagement(@DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl) {
     executeSession(cl, null, null)
   }
 
-  private executeSession(Closure cl, Object context, Closure configure) {
+  private executeSession(@DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl, Object context, @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure configure) {
     def result = null
-
     if (cl) {
       if (delegate == null) {
         delegate = new SessionDelegate(options)
       }
-
       cl.delegate = delegate
-      cl.resolveStrategy = Closure.DELEGATE_FIRST
+      cl.resolveStrategy = DELEGATE_FIRST
       result = cl(context)
     }
-
     result
   }
+
 }

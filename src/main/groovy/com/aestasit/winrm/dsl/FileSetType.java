@@ -22,5 +22,5 @@ package com.aestasit.winrm.dsl;
  * @author Andrey Adamovich
  */
 public enum FileSetType {
-  UNKNOWN, LOCAL, REMOTE;
+  UNKNOWN, LOCAL, REMOTE
 }

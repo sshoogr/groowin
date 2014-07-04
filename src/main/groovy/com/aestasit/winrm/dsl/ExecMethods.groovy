@@ -38,8 +38,6 @@ class ExecMethods {
    * The result is an instance of <code>CommandOutput</code>
    */
   CommandOutput exec(String cmd, String... arguments) {
-    logger.debug "executing command [$cmd], [$arguments]"
-
     doExec(cmd, new ExecOptions(options.execOptions), arguments)
   }
 
@@ -55,9 +53,8 @@ class ExecMethods {
    * @return true, if command was successful
    */
   boolean ok(String cmd, String... arguments) {
-    def restul = doExec(cmd, new ExecOptions([ failOnError: false , showOutput: false]), arguments)
-
-    doExec(cmd, new ExecOptions([failOnError: false, showOutput: false]), arguments).exitStatus == 0
+    def result = doExec(cmd, new ExecOptions([ failOnError: false , showOutput: false]), arguments)
+    result.exitStatus == 0
   }
 
   /**
@@ -73,25 +70,21 @@ class ExecMethods {
 
   private CommandOutput doExec(String cmd, ExecOptions options, String... arguments) {
     CommandOutput output = null
-
     cifsConnection { OverthereConnection connection ->
       CmdLine cmdLine = composeCmdLine(cmd, arguments)
-
       output = catchExceptions(options) {
         executeCommand(cmdLine, options, connection)
       }
     }
-
-    return output
+    output
   }
 
-  private CmdLine composeCmdLine(String cmd, String... arguments){
+  static private CmdLine composeCmdLine(String cmd, String... arguments){
     CmdLine cmdLine = new CmdLine()
     cmdLine.addArgument(cmd)
     for (String arg : arguments) {
       cmdLine = cmdLine.addArgument(arg)
     }
-
     cmdLine
   }
 
@@ -108,7 +101,6 @@ class ExecMethods {
       throw new WinRMException("Command failed with the exception ", e)
     } else {
       logger.warn("Caught exception: " + e.getMessage())
-
       new CommandOutput(-1, e.getMessage(), e)
     }
   }
@@ -117,20 +109,15 @@ class ExecMethods {
     if (options.showCommand) {
       logger.info("> " + cmd)
     }
-
     def outputHandler = CapturingOverthereExecutionOutputHandler.capturingHandler()
     def errorHandler = CapturingOverthereExecutionOutputHandler.capturingHandler()
-
     connection.execute(outputHandler, errorHandler, cmd)
-
     if (errorHandler.output) {
       throw new WinRMException("Executing command line [$cmd] failed. The error caused [$errorHandler.output]")
     }
-
     if(options.showOutput && outputHandler.output){
       logger.info(outputHandler.output)
     }
-
     new CommandOutput(0, outputHandler.output)
   }
 }

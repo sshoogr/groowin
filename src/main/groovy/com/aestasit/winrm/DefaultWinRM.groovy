@@ -16,16 +16,21 @@
 
 package com.aestasit.winrm
 
+import com.aestasit.winrm.dsl.SessionDelegate
 import com.aestasit.winrm.dsl.WinRMDslEngine
 import com.aestasit.winrm.log.Logger
 import com.aestasit.winrm.log.SysOutLogger
 
+import static groovy.lang.Closure.DELEGATE_FIRST
+
 /**
  * Default "static" implementation of WinRM DSL to be used inside plain Groovy scripts.
- * <p>
- * Created by Sergey Korenko on 24.06.14.
+ *
+ * @author Andrey Adamovich
+ *
  */
 class DefaultWinRM {
+
   static WinRMOptions options = new WinRMOptions()
 
   static {
@@ -40,11 +45,11 @@ class DefaultWinRM {
     }
   }
 
-  static remoteSession(Closure cl) {
-    new WinRMDslEngine(options).remoteSession(cl)
+  static remoteManagement(@DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl) {
+    new WinRMDslEngine(options).remoteManagement(cl)
   }
 
-  static execOptions(Closure cl) {
+  static execOptions(@DelegatesTo(strategy = DELEGATE_FIRST, value = ExecOptions) Closure cl) {
     options.execOptions(cl)
   }
 
@@ -56,7 +61,7 @@ class DefaultWinRM {
     options.getCopyOptions()
   }
 
-  static copyOptions(Closure cl) {
+  static copyOptions(@DelegatesTo(strategy = DELEGATE_FIRST, value = CopyOptions) Closure cl) {
     options.copyOptions(cl)
   }
 

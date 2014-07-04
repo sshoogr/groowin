@@ -42,7 +42,7 @@ class CommandOutput {
    * Convenience method to verify that the
    * command output has failed.
    *
-   * @return true if the command has failed
+   * @return true if the command has failed.
    */
   boolean failed() {
     this.exitStatus != 0

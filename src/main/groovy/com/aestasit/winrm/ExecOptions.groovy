@@ -23,15 +23,9 @@ package com.aestasit.winrm
  *
  */
 class ExecOptions extends CommonOptions {
+
   Boolean showOutput       = true
   Boolean showCommand      = true
-//  Long maxWait             = 0
-
-//  Long succeedOnExitStatus = 0
-//  File outputFile          = null
-//  Boolean appendFile       = false
-
-//  def escapeCharacters     = null
 
   ExecOptions() {
   }
@@ -40,10 +34,6 @@ class ExecOptions extends CommonOptions {
     this.failOnError         = setValue(opt1?.failOnError, true)
     this.showOutput          = setValue(opt1?.showOutput, true)
     this.showCommand         = setValue(opt1?.showCommand, true)
-//    this.succeedOnExitStatus = setValue(opt1?.succeedOnExitStatus, 0)
-//    this.outputFile          = setValue(opt1?.outputFile, null)
-//    this.appendFile          = setValue(opt1?.appendFile, false)
-//    this.escapeCharacters    = setValue(opt1?.escapeCharacters, null)
   }
 
   ExecOptions(ExecOptions opt1, ExecOptions opt2) {
@@ -54,9 +44,5 @@ class ExecOptions extends CommonOptions {
     this.failOnError         = setValue(opt2?.failOnError, opt1?.failOnError, true)
     this.showOutput          = setValue(opt2?.showOutput, opt1?.showOutput, true)
     this.showCommand         = setValue(opt2?.showCommand, opt1?.showCommand, true)
-//    this.succeedOnExitStatus = setValue(opt2?.succeedOnExitStatus, opt1?.succeedOnExitStatus, 0)
-//    this.outputFile          = setValue(opt2?.outputFile, opt1?.outputFile, null)
-//    this.appendFile          = setValue(opt2?.appendFile, opt1?.appendFile, false)
-//    this.escapeCharacters    = setValue(opt2?.escapeCharacters, opt1?.escapeCharacters, null)
   }
 }

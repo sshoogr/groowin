@@ -19,9 +19,10 @@ package com.aestasit.winrm
 import com.aestasit.winrm.log.Logger
 
 /**
- * The class is responsible for 
- * <p>
- * Created by Sergey Korenko on 24.06.14.
+ * Configuration object holding options used for DSL configuration.
+ *
+ * @author Sergey Korenko
+ *
  */
 class WinRMOptions extends CommonOptions {
 
@@ -33,7 +34,7 @@ class WinRMOptions extends CommonOptions {
   boolean verbose           = false
   Logger logger             = null
 
-  // exec options
+  // Exec options.
   ExecOptions execOptions = new ExecOptions()
   def execOptions(Closure cl) {
     cl.delegate = execOptions
@@ -41,11 +42,12 @@ class WinRMOptions extends CommonOptions {
     cl()
   }
 
-  // CIFS copy options
+  // CIFS copy options.
   CopyOptions copyOptions = new CopyOptions()
   def copyOptions(Closure cl) {
     cl.delegate = copyOptions
     cl.resolveStrategy = Closure.DELEGATE_FIRST
     cl()
   }
+
 }

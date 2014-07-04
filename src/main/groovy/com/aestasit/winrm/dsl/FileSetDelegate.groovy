@@ -83,4 +83,25 @@ class FileSetDelegate {
       throw new WinRMException("File set can not contain both local and remote source or target definitions!")
     }
   }
+
+  FileSetType getType() {
+    type
+  }
+
+  List<File> getLocalDirs() {
+    localDirs
+  }
+
+  List<File> getLocalFiles() {
+    localFiles
+  }
+
+  List<String> getRemoteFiles() {
+    remoteFiles
+  }
+
+  List<String> getRemoteDirs() {
+    remoteDirs
+  }
+
 }

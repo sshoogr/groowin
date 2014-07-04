@@ -21,18 +21,18 @@ import com.xebialabs.overthere.OverthereConnection
 import com.xebialabs.overthere.OverthereFile
 
 import static com.aestasit.winrm.dsl.FileSetType.*
+import static groovy.lang.Closure.DELEGATE_FIRST
 import static org.apache.commons.io.FilenameUtils.*
 
 /**
  * The <code>CopyMethods</code> class provides
- * methods for copying files from local to remote machines and vise versa.
+ * methods for copying files from local to remote machines and vice versa.
  *
  * On a remote machine one of the Windows family OSs has to be installed.
- * A local machine does not have restrictions on the installed OS
+ * A local machine does not have restrictions on the installed OS.
  *
- * Communication is done based on CIFS protocol
+ * Communication is done based on CIFS protocol.
  *
- * <p>
  * @author Sergey Korenko
  */
 class CopyMethods {
@@ -47,7 +47,6 @@ class CopyMethods {
     if (options.verbose) {
       logger.debug("Copy local file represented by string $sourceFile to remote folder represented by string $dst")
     }
-
     cp(new File(sourceFile), dst)
   }
 
@@ -58,10 +57,6 @@ class CopyMethods {
    * @param dst name of the directory where to place a source file of a remote machine
    */
   def cp(File sourceFile, String dst) {
-    if (options.verbose) {
-      logger.debug("Copy local file represented by File object with path $sourceFile to remote folder represented by string $dst")
-    }
-
     cifsConnection { OverthereConnection connection ->
       CopyOptionsDelegate copySpec = new CopyOptionsDelegate()
       copySpec.with {
@@ -72,17 +67,12 @@ class CopyMethods {
     }
   }
 
-  def cp(Closure cl) {
-    if (options.verbose) {
-      logger.debug("Copying with closure")
-    }
-
+  def cp(@DelegatesTo(strategy = DELEGATE_FIRST, value = CopyOptionsDelegate) Closure cl) {
     CopyOptionsDelegate copySpec = new CopyOptionsDelegate()
     cl.delegate = copySpec
-    cl.resolveStrategy = Closure.DELEGATE_FIRST
+    cl.resolveStrategy = DELEGATE_FIRST
     cl()
     validateCopySpec(copySpec)
-
     cifsConnection { OverthereConnection connection ->
       if (copySpec.source.type == LOCAL) {
         upload(copySpec, connection)
@@ -93,10 +83,6 @@ class CopyMethods {
   }
 
   private void validateCopySpec(CopyOptionsDelegate copySpec) {
-    if (options.verbose) {
-      logger.debug("Checking if source and destination parameters are defined correctly")
-    }
-
     if (copySpec.source.type == null || copySpec.source.type == UNKNOWN ||
             copySpec.target.type == null || copySpec.target.type == UNKNOWN) {
       throw new WinRMException("Either copying source (from) or target (into) is of unknown type!")
@@ -107,6 +93,8 @@ class CopyMethods {
   }
 
   private void download(CopyOptionsDelegate copySpec, OverthereConnection connection) {
+    logger.info("> Downloading remote file(s)")
+
     // Download remote files.
     copySpec.source.remoteFiles.each { String srcFile ->
       copySpec.target.localDirs.each { File dstDir ->
@@ -135,26 +123,15 @@ class CopyMethods {
   }
 
   private void upload(CopyOptionsDelegate copySpec, OverthereConnection connection) {
-    if (options.verbose) {
-      logger.debug("BEGIN Uploading files from a local machine to a remote machine")
-    }
-
     def remoteDirs = copySpec.target.remoteDirs
     def remoteFiles = copySpec.target.remoteFiles
-
     createRemoteFolderStructure(remoteFiles, remoteDirs, connection)
-
     // Upload local files and directories.
     def allLocalFiles = copySpec.source.localFiles + copySpec.source.localDirs
     uploadLocalFiles( allLocalFiles, remoteFiles, remoteDirs, connection)
   }
 
   private void createRemoteFolderStructure(def remoteFiles, def remoteDirs, OverthereConnection connection){
-    if (options.verbose) {
-      logger.debug("Creation on a remote machine file structure that is " +
-              "identical to the file structure on a local machine and which is defined by input parameters of copy procedure")
-    }
-
     remoteFiles.each { String dstFile ->
       def dstDir = getFullPathNoEndSeparator(dstFile)
       createRemoteDirectory(dstDir, connection)
@@ -165,15 +142,11 @@ class CopyMethods {
   }
 
   private void uploadLocalFiles(def allLocalFiles, def remoteFiles, def remoteDirs, OverthereConnection connection) {
-    if (options.verbose) {
-      logger.info("> Uploading files into remote directory")
-    }
-
+    logger.info("> Uploading local file(s)")
     allLocalFiles.each { File sourcePath ->
       if (sourcePath.isDirectory()) {
         sourcePath.eachFileRecurse { File childPath ->
           def relativePath = relativePath(sourcePath, childPath)
-
           remoteDirs.each { String dstDir ->
             if (childPath.isDirectory()) {
               def dstParentDir = separatorsToWindows(concat(dstDir, relativePath))
@@ -197,10 +170,7 @@ class CopyMethods {
   }
 
   private void remoteEachFileRecurse(String remoteDir, OverthereConnection connection, Closure cl) {
-    if (options.verbose) {
-      logger.info("> Getting file list from ${remoteDir} directory")
-    }
-
+    logger.info("> Getting file list from ${remoteDir} directory")
     List<OverthereFile> entries = connection.getFile(separatorsToWindows(remoteDir)).listFiles()
     entries.each { OverthereFile entry ->
       def childPath = separatorsToWindows(concat(remoteDir, entry.name))
@@ -215,9 +185,7 @@ class CopyMethods {
   }
 
   private void doPut(File srcFile, String dst, OverthereConnection connection) {
-    if (options.verbose) {
-      logger.info("> ${srcFile.canonicalPath} => ${dst}")
-    }
+    logger.info("> ${srcFile.canonicalPath} => ${dst}")
     try {
       def outputStream = connection.getFile(dst).outputStream
       outputStream << srcFile.newInputStream()
@@ -227,18 +195,15 @@ class CopyMethods {
   }
 
   private void doGet(String srcFile, File dstFile, OverthereConnection connection) {
-    if (options.verbose) {
-      logger.info("> ${srcFile} => ${dstFile.canonicalPath}")
-    }
-
+    logger.info("> ${srcFile} => ${dstFile.canonicalPath}")
     dstFile.newOutputStream() << connection.getFile(srcFile).inputStream
   }
 
-  private String relativePath(File parent, File child) {
+  static private String relativePath(File parent, File child) {
     separatorsToWindows(child.canonicalPath.replace(parent.canonicalPath, '')).replaceAll('^\\\\', '')
   }
 
-  private String relativePath(String parent, String child) {
+  static private String relativePath(String parent, String child) {
     normalizeNoEndSeparator(child)
             .replace(normalizeNoEndSeparator(parent) + File.separatorChar, '')
             .replace(File.separatorChar.toString(), '\\')
@@ -246,10 +211,10 @@ class CopyMethods {
 
 
   private void createRemoteDirectory(String dstFile, OverthereConnection connection) {
-    logger.debug("> Check if $dstFile exists")
-
+    if (options.verbose) {
+      logger.debug("> Check if $dstFile exists")
+    }
     boolean dirExists = connection.getFile(dstFile).exists()
-
     if (!dirExists) {
       logger.debug("Creating remote directory: $dstFile")
       mkdir(dstFile, connection)
@@ -260,7 +225,6 @@ class CopyMethods {
     if (options.verbose) {
       logger.info("> make directory ${folderToCreate}")
     }
-
     connection.getFile(folderToCreate).mkdir()
   }
 }

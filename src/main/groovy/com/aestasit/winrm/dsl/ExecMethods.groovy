@@ -30,39 +30,44 @@ import com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler
 class ExecMethods {
 
   /**
-   * Executes command on a remote host
+   * Executes command on a remote host.
    *
-   * @param cmd command
-   * @param arguments command arguments
-   * @return result of the command execution on a remote machine.
-   * The result is an instance of <code>CommandOutput</code>
+   * @param cmd a command to execute remotely.
+   * @param arguments command arguments.
+   * @return result of the command execution on a remote machine. The result is an instance of <code>CommandOutput</code>.
    */
   CommandOutput exec(String cmd, String... arguments) {
     doExec(cmd, new ExecOptions(options.execOptions), arguments)
   }
 
+  /**
+   * Executes command on a remote host.
+   *
+   * @param execOptions execution options.
+   * @return result of the command execution on a remote machine. The result is an instance of <code>CommandOutput</code>.
+   */
   CommandOutput exec(Map execOptions) {
-    doExec(execOptions.command, new ExecOptions(options.execOptions, execOptions))
+    doExec(execOptions.command, new ExecOptions(options.execOptions, execOptions), execOptions.arguments)
   }
 
   /**
    * Execute the specified command and returns a boolean to
-   * signal if the command execution was successful
+   * signal if the command execution was successful.
    * 
-   * @param cmd a command to execute remotely
-   * @return true, if command was successful
+   * @param cmd a command to execute remotely.
+   * @return true, if command was successful.
    */
   boolean ok(String cmd, String... arguments) {
-    def result = doExec(cmd, new ExecOptions([ failOnError: false , showOutput: false]), arguments)
+    def result = doExec(cmd, new ExecOptions([ failOnError: false, showOutput: false ]), arguments)
     result.exitStatus == 0
   }
 
   /**
    * Execute the specified command and returns a boolean to
-   * signal if the command execution was unsuccessful
+   * signal if the command execution was unsuccessful.
    * 
-   * @param cmd a command to execute remotely
-   * @return true, if command was unsuccessful
+   * @param cmd a command to execute remotely.
+   * @return true, if command was unsuccessful.
    */
   boolean fail(String cmd, String... arguments) {
     !ok(cmd, arguments)

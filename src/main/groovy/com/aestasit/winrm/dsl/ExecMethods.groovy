@@ -37,7 +37,7 @@ class ExecMethods {
    * @return result of the command execution on a remote machine. The result is an instance of <code>CommandOutput</code>.
    */
   CommandOutput exec(String cmd, String... arguments) {
-    doExec(cmd, new ExecOptions(options.execOptions), arguments)
+    doExec(cmd, new ExecOptions(options.execOptions), arguments?.toList())
   }
 
   /**
@@ -47,7 +47,7 @@ class ExecMethods {
    * @return result of the command execution on a remote machine. The result is an instance of <code>CommandOutput</code>.
    */
   CommandOutput exec(Map execOptions) {
-    doExec(execOptions.command, new ExecOptions(options.execOptions, execOptions), execOptions.arguments)
+    doExec(execOptions.command, new ExecOptions(options.execOptions, execOptions), execOptions.arguments?.toList())
   }
 
   /**
@@ -58,10 +58,10 @@ class ExecMethods {
    * @return true, if command was successful.
    */
   boolean ok(String cmd, String... arguments) {
-    def result = doExec(cmd, new ExecOptions([ failOnError: false, showOutput: false ]), arguments)
+    def result = doExec(cmd, new ExecOptions([ failOnError: false, showOutput: false ]), arguments?.toList())
     result.exitStatus == 0
   }
-
+  
   /**
    * Execute the specified command and returns a boolean to
    * signal if the command execution was unsuccessful.
@@ -73,7 +73,7 @@ class ExecMethods {
     !ok(cmd, arguments)
   }
 
-  private CommandOutput doExec(String cmd, ExecOptions options, String... arguments) {
+  private CommandOutput doExec(String cmd, ExecOptions options, List<String> arguments = []) {
     CommandOutput output = null
     cifsConnection { OverthereConnection connection ->
       CmdLine cmdLine = composeCmdLine(cmd, arguments)
@@ -84,7 +84,7 @@ class ExecMethods {
     output
   }
 
-  static private CmdLine composeCmdLine(String cmd, String... arguments){
+  static private CmdLine composeCmdLine(String cmd, List<String> arguments = []) {
     CmdLine cmdLine = new CmdLine()
     cmdLine.addArgument(cmd)
     for (String arg : arguments) {

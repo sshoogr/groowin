@@ -24,6 +24,11 @@ class ExecTest extends BaseIntegrationTest {
   void testTypeHostsFile() {
     engine.remoteManagement {
       exec('type', 'c:\\Windows\\System32\\drivers\\etc\\hosts')
+      exec(
+        command: 'type', 
+        arguments: [ 'c:\\Windows\\System32\\drivers\\etc\\hosts' ],
+        failOnError: false
+      )
     }
   }
 

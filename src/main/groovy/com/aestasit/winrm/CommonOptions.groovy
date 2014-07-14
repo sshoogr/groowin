@@ -24,6 +24,7 @@ package com.aestasit.winrm
 abstract class CommonOptions {
 
   Boolean failOnError = true
+  long maxWait = 600000
 
   static setValue(val1, dflt) {
     val1 != null ? val1 : dflt

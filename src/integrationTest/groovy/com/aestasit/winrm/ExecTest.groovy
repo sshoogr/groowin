@@ -62,4 +62,12 @@ class ExecTest extends BaseIntegrationTest {
       assert fail('mkdur dur')
     }
   }
+
+  @Test
+  void testTimeout() throws Exception {
+    engine.remoteManagement {
+      exec('timeout', '70')
+    }
+  }
+
 }

@@ -28,8 +28,7 @@ import java.util.regex.Pattern
 
 import static com.xebialabs.overthere.ConnectionOptions.*
 import static com.xebialabs.overthere.OperatingSystemFamily.WINDOWS
-import static com.xebialabs.overthere.cifs.CifsConnectionBuilder.CIFS_PROTOCOL
-import static com.xebialabs.overthere.cifs.CifsConnectionBuilder.CONNECTION_TYPE
+import static com.xebialabs.overthere.cifs.CifsConnectionBuilder.*
 import static com.xebialabs.overthere.cifs.CifsConnectionType.WINRM_INTERNAL
 import static groovy.lang.Closure.DELEGATE_FIRST
 
@@ -59,7 +58,6 @@ class SessionDelegate {
     this.username = options.defaultUser
     this.port = options.defaultPort
     this.password = options.defaultPassword
-
     if (options.logger != null) {
       logger = options.logger
     } else {
@@ -88,16 +86,17 @@ class SessionDelegate {
       throw new WinRMException("Password is required.")
     }
 
-    def otherthereOptions = new ConnectionOptions()
+    def connectionOptions = new ConnectionOptions()
 
-    otherthereOptions[ADDRESS]          = host
-    otherthereOptions[PORT]             = port
-    otherthereOptions[USERNAME]         = username
-    otherthereOptions[PASSWORD]         = password
-    otherthereOptions[OPERATING_SYSTEM] = WINDOWS
-    otherthereOptions[CONNECTION_TYPE]  = WINRM_INTERNAL
+    connectionOptions[ADDRESS]          = host
+    connectionOptions[PORT]             = port
+    connectionOptions[USERNAME]         = username
+    connectionOptions[PASSWORD]         = password
+    connectionOptions[OPERATING_SYSTEM] = WINDOWS
+    connectionOptions[CONNECTION_TYPE]  = WINRM_INTERNAL
+    connectionOptions[WINRM_TIMEMOUT]   = options.maxWait
 
-    OverthereConnection connection = Overthere.getConnection(CIFS_PROTOCOL, otherthereOptions)
+    OverthereConnection connection = Overthere.getConnection(CIFS_PROTOCOL, connectionOptions)
 
     cl.delegate = this
     cl.resolveStrategy = DELEGATE_FIRST

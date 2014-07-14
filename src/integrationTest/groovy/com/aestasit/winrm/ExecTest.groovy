@@ -66,7 +66,7 @@ class ExecTest extends BaseIntegrationTest {
   @Test
   void testTimeout() throws Exception {
     engine.remoteManagement {
-      exec('timeout', '70')
+      exec('timeout', '200')
     }
   }
 

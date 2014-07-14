@@ -94,7 +94,7 @@ class SessionDelegate {
     connectionOptions[PASSWORD]         = password
     connectionOptions[OPERATING_SYSTEM] = WINDOWS
     connectionOptions[CONNECTION_TYPE]  = WINRM_INTERNAL
-    connectionOptions[WINRM_TIMEMOUT]   = options.maxWait
+    connectionOptions[WINRM_TIMEMOUT]   = "PT${options.maxWait / 1000}.${options.maxWait % 1000}S".toString()
 
     OverthereConnection connection = Overthere.getConnection(CIFS_PROTOCOL, connectionOptions)
 

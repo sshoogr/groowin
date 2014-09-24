@@ -34,7 +34,7 @@ class BaseIntegrationTest {
       defaultUser = 'vagrant'
       defaultPassword = 'vagrant'
       defaultPort = 5985
-      verbose = false
+      verbose = true
     }
     engine = new WinRMDslEngine(options)
   }

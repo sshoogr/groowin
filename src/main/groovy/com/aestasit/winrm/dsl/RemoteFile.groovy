@@ -16,8 +16,8 @@
 
 package com.aestasit.winrm.dsl
 
-import com.xebialabs.overthere.OverthereConnection
-import com.xebialabs.overthere.OverthereFile
+import com.xebialabs.overthere.cifs.CifsFile
+import com.xebialabs.overthere.cifs.winrm.CifsWinRmConnection
 
 import static org.apache.commons.io.FilenameUtils.separatorsToWindows
 
@@ -39,16 +39,16 @@ class RemoteFile {
 
   String getText() {
     String content = null
-    delegate.cifsConnection { OverthereConnection connection ->
-      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+    delegate.cifsConnection { CifsWinRmConnection connection ->
+      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
       content = remoteFile.inputStream.text
     }
     content
   }
 
   void setText(String text) {
-    delegate.cifsConnection { OverthereConnection connection ->
-      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+    delegate.cifsConnection { CifsWinRmConnection connection ->
+      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
       remoteFile.outputStream << text
     }
   }
@@ -59,8 +59,8 @@ class RemoteFile {
 
   boolean canRead() {
     boolean readable = false
-    delegate.cifsConnection { OverthereConnection connection ->
-      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+    delegate.cifsConnection { CifsWinRmConnection connection ->
+      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
       readable = remoteFile.canRead()
     }
     readable
@@ -68,8 +68,8 @@ class RemoteFile {
 
   boolean canWrite() {
     boolean writable = false
-    delegate.cifsConnection { OverthereConnection connection ->
-      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+    delegate.cifsConnection { CifsWinRmConnection connection ->
+      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
       writable = remoteFile.canWrite()
     }
     writable
@@ -77,8 +77,8 @@ class RemoteFile {
 
   boolean isHidden() {
     boolean hidden = false
-    delegate.cifsConnection { OverthereConnection connection ->
-      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+    delegate.cifsConnection { CifsWinRmConnection connection ->
+      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
       hidden = remoteFile.isHidden()
     }
     hidden
@@ -86,8 +86,8 @@ class RemoteFile {
 
   long lastModified() {
     long lastModified = 0l
-    delegate.cifsConnection { OverthereConnection connection ->
-      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+    delegate.cifsConnection { CifsWinRmConnection connection ->
+      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
       lastModified = remoteFile.lastModified()
     }
     lastModified
@@ -95,8 +95,8 @@ class RemoteFile {
 
   long length() {
     long length = 0l
-    delegate.cifsConnection { OverthereConnection connection ->
-      OverthereFile remoteFile = connection.getFile(separatorsToWindows(destination))
+    delegate.cifsConnection { CifsWinRmConnection connection ->
+      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
       length = remoteFile.length()
     }
     length

@@ -19,7 +19,7 @@ package com.aestasit.winrm.dsl
 import com.aestasit.winrm.ExecOptions
 import com.aestasit.winrm.WinRMException
 import com.xebialabs.overthere.CmdLine
-import com.xebialabs.overthere.OverthereConnection
+import com.xebialabs.overthere.cifs.winrm.CifsWinRmConnection
 import com.xebialabs.overthere.util.CapturingOverthereExecutionOutputHandler
 
 /**
@@ -53,21 +53,21 @@ class ExecMethods {
   /**
    * Execute the specified command and returns a boolean to
    * signal if the command execution was successful.
-   * 
+   *
    * @param cmd a command to execute remotely.
-   * @return true, if command was successful.
+   * @return true , if command was successful.
    */
   boolean ok(String cmd, String... arguments) {
-    def result = doExec(cmd, new ExecOptions([ failOnError: false, showOutput: false ]), arguments?.toList())
+    def result = doExec(cmd, new ExecOptions([failOnError: false, showOutput: false]), arguments?.toList())
     result.exitStatus == 0
   }
-  
+
   /**
    * Execute the specified command and returns a boolean to
    * signal if the command execution was unsuccessful.
-   * 
+   *
    * @param cmd a command to execute remotely.
-   * @return true, if command was unsuccessful.
+   * @return true , if command was unsuccessful.
    */
   boolean fail(String cmd, String... arguments) {
     !ok(cmd, arguments)
@@ -75,7 +75,7 @@ class ExecMethods {
 
   private CommandOutput doExec(String cmd, ExecOptions options, List<String> arguments = []) {
     CommandOutput output = null
-    cifsConnection { OverthereConnection connection ->
+    cifsConnection { CifsWinRmConnection connection ->
       CmdLine cmdLine = composeCmdLine(cmd, arguments)
       output = catchExceptions(options) {
         executeCommand(cmdLine, options, connection)
@@ -110,7 +110,7 @@ class ExecMethods {
     }
   }
 
-  private CommandOutput executeCommand(CmdLine cmd, ExecOptions options, OverthereConnection connection) {
+  private CommandOutput executeCommand(CmdLine cmd, ExecOptions options, CifsWinRmConnection connection) {
     if (options.showCommand) {
       logger.info("> " + cmd)
     }
@@ -120,7 +120,7 @@ class ExecMethods {
     if (errorHandler.output) {
       throw new WinRMException("Executing command line [$cmd] failed. The error caused [$errorHandler.output]")
     }
-    if(options.showOutput && outputHandler.output){
+    if (options.showOutput && outputHandler.output) {
       logger.info(outputHandler.output)
     }
     new CommandOutput(0, outputHandler.output)

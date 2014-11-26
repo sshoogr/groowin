@@ -24,16 +24,16 @@ package com.aestasit.winrm
  */
 class ExecOptions extends CommonOptions {
 
-  Boolean showOutput       = true
-  Boolean showCommand      = true
+  Boolean showOutput = true
+  Boolean showCommand = true
 
   ExecOptions() {
   }
 
   ExecOptions(ExecOptions opt1) {
-    this.failOnError         = setValue(opt1?.failOnError, true)
-    this.showOutput          = setValue(opt1?.showOutput, true)
-    this.showCommand         = setValue(opt1?.showCommand, true)
+    this.failOnError = setValue(opt1?.failOnError, true)
+    this.showOutput = setValue(opt1?.showOutput, true)
+    this.showCommand = setValue(opt1?.showCommand, true)
   }
 
   ExecOptions(ExecOptions opt1, ExecOptions opt2) {
@@ -41,8 +41,8 @@ class ExecOptions extends CommonOptions {
   }
 
   ExecOptions(ExecOptions opt1, Map opt2) {
-    this.failOnError         = setValue(opt2?.failOnError, opt1?.failOnError, true)
-    this.showOutput          = setValue(opt2?.showOutput, opt1?.showOutput, true)
-    this.showCommand         = setValue(opt2?.showCommand, opt1?.showCommand, true)
+    this.failOnError = setValue(opt2?.failOnError, opt1?.failOnError, true)
+    this.showOutput = setValue(opt2?.showOutput, opt1?.showOutput, true)
+    this.showCommand = setValue(opt2?.showCommand, opt1?.showCommand, true)
   }
 }

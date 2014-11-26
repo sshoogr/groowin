@@ -17,8 +17,8 @@
 package com.aestasit.winrm.dsl
 
 import com.aestasit.winrm.WinRMException
-import com.xebialabs.overthere.OverthereConnection
-import com.xebialabs.overthere.OverthereFile
+import com.xebialabs.overthere.cifs.winrm.CifsWinRmConnection
+import com.xebialabs.overthere.cifs.CifsFile
 
 import static com.aestasit.winrm.dsl.FileSetType.*
 import static groovy.lang.Closure.DELEGATE_FIRST
@@ -57,7 +57,7 @@ class CopyMethods {
    * @param dst name of the directory where to place a source file of a remote machine
    */
   def cp(File sourceFile, String dst) {
-    cifsConnection { OverthereConnection connection ->
+    cifsConnection { CifsWinRmConnection connection ->
       CopyOptionsDelegate copySpec = new CopyOptionsDelegate()
       copySpec.with {
         from { localFile(sourceFile) }
@@ -73,7 +73,7 @@ class CopyMethods {
     cl.resolveStrategy = DELEGATE_FIRST
     cl()
     validateCopySpec(copySpec)
-    cifsConnection { OverthereConnection connection ->
+    cifsConnection { CifsWinRmConnection connection ->
       if (copySpec.source.type == LOCAL) {
         upload(copySpec, connection)
       } else if (copySpec.source.type == REMOTE) {
@@ -84,7 +84,7 @@ class CopyMethods {
 
   private void validateCopySpec(CopyOptionsDelegate copySpec) {
     if (copySpec.source.type == null || copySpec.source.type == UNKNOWN ||
-            copySpec.target.type == null || copySpec.target.type == UNKNOWN) {
+        copySpec.target.type == null || copySpec.target.type == UNKNOWN) {
       throw new WinRMException("Either copying source (from) or target (into) is of unknown type!")
     }
     if (copySpec.source.type == copySpec.target.type) {
@@ -92,7 +92,7 @@ class CopyMethods {
     }
   }
 
-  private void download(CopyOptionsDelegate copySpec, OverthereConnection connection) {
+  private void download(CopyOptionsDelegate copySpec, CifsWinRmConnection connection) {
     logger.info("> Downloading remote file(s)")
 
     // Download remote files.
@@ -122,16 +122,16 @@ class CopyMethods {
     }
   }
 
-  private void upload(CopyOptionsDelegate copySpec, OverthereConnection connection) {
+  private void upload(CopyOptionsDelegate copySpec, CifsWinRmConnection connection) {
     def remoteDirs = copySpec.target.remoteDirs
     def remoteFiles = copySpec.target.remoteFiles
     createRemoteFolderStructure(remoteFiles, remoteDirs, connection)
     // Upload local files and directories.
     def allLocalFiles = copySpec.source.localFiles + copySpec.source.localDirs
-    uploadLocalFiles( allLocalFiles, remoteFiles, remoteDirs, connection)
+    uploadLocalFiles(allLocalFiles, remoteFiles, remoteDirs, connection)
   }
 
-  private void createRemoteFolderStructure(def remoteFiles, def remoteDirs, OverthereConnection connection){
+  private void createRemoteFolderStructure(def remoteFiles, def remoteDirs, CifsWinRmConnection connection) {
     remoteFiles.each { String dstFile ->
       def dstDir = getFullPathNoEndSeparator(dstFile)
       createRemoteDirectory(dstDir, connection)
@@ -141,7 +141,7 @@ class CopyMethods {
     }
   }
 
-  private void uploadLocalFiles(def allLocalFiles, def remoteFiles, def remoteDirs, OverthereConnection connection) {
+  private void uploadLocalFiles(def allLocalFiles, def remoteFiles, def remoteDirs, CifsWinRmConnection connection) {
     logger.info("> Uploading local file(s)")
     allLocalFiles.each { File sourcePath ->
       if (sourcePath.isDirectory()) {
@@ -169,10 +169,10 @@ class CopyMethods {
     }
   }
 
-  private void remoteEachFileRecurse(String remoteDir, OverthereConnection connection, Closure cl) {
+  private void remoteEachFileRecurse(String remoteDir, CifsWinRmConnection connection, Closure cl) {
     logger.info("> Getting file list from ${remoteDir} directory")
-    List<OverthereFile> entries = connection.getFile(separatorsToWindows(remoteDir)).listFiles()
-    entries.each { OverthereFile entry ->
+    List<CifsFile> entries = connection.getFile(separatorsToWindows(remoteDir)).listFiles()
+    entries.each { CifsFile entry ->
       def childPath = separatorsToWindows(concat(remoteDir, entry.name))
       if (entry.isDirectory()) {
         if (!(entry.name in ['.', '..'])) {
@@ -184,7 +184,7 @@ class CopyMethods {
     }
   }
 
-  private void doPut(File srcFile, String dst, OverthereConnection connection) {
+  private void doPut(File srcFile, String dst, CifsWinRmConnection connection) {
     logger.info("> ${srcFile.canonicalPath} => ${dst}")
     try {
       def outputStream = connection.getFile(dst).outputStream
@@ -194,7 +194,7 @@ class CopyMethods {
     }
   }
 
-  private void doGet(String srcFile, File dstFile, OverthereConnection connection) {
+  private void doGet(String srcFile, File dstFile, CifsWinRmConnection connection) {
     logger.info("> ${srcFile} => ${dstFile.canonicalPath}")
     dstFile.newOutputStream() << connection.getFile(srcFile).inputStream
   }
@@ -205,12 +205,12 @@ class CopyMethods {
 
   static private String relativePath(String parent, String child) {
     normalizeNoEndSeparator(child)
-            .replace(normalizeNoEndSeparator(parent) + File.separatorChar, '')
-            .replace(File.separatorChar.toString(), '\\')
+        .replace(normalizeNoEndSeparator(parent) + File.separatorChar, '')
+        .replace(File.separatorChar.toString(), '\\')
   }
 
 
-  private void createRemoteDirectory(String dstFile, OverthereConnection connection) {
+  private void createRemoteDirectory(String dstFile, CifsWinRmConnection connection) {
     if (options.verbose) {
       logger.debug("> Check if $dstFile exists")
     }
@@ -221,7 +221,7 @@ class CopyMethods {
     }
   }
 
-  private void mkdir(String folderToCreate, OverthereConnection connection) {
+  private void mkdir(String folderToCreate, CifsWinRmConnection connection) {
     if (options.verbose) {
       logger.info("> make directory ${folderToCreate}")
     }

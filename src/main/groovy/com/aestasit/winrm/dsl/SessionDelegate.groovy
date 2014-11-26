@@ -21,14 +21,14 @@ import com.aestasit.winrm.WinRMOptions
 import com.aestasit.winrm.log.Logger
 import com.aestasit.winrm.log.Slf4jLogger
 import com.xebialabs.overthere.ConnectionOptions
-import com.xebialabs.overthere.Overthere
-import com.xebialabs.overthere.OverthereConnection
+import com.xebialabs.overthere.cifs.winrm.CifsWinRmConnection
 
 import java.util.regex.Pattern
 
 import static com.xebialabs.overthere.ConnectionOptions.*
 import static com.xebialabs.overthere.OperatingSystemFamily.WINDOWS
-import static com.xebialabs.overthere.cifs.CifsConnectionBuilder.*
+import static com.xebialabs.overthere.cifs.CifsConnectionBuilder.CONNECTION_TYPE
+import static com.xebialabs.overthere.cifs.CifsConnectionBuilder.WINRM_TIMEMOUT
 import static com.xebialabs.overthere.cifs.CifsConnectionType.WINRM_INTERNAL
 import static groovy.lang.Closure.DELEGATE_FIRST
 
@@ -43,14 +43,14 @@ class SessionDelegate {
   private static final int DEFAULT_WINRM_PORT = 5985
   private static final Pattern WINRM_URL = ~/^(([^:@]+)(:([^@]+))?@)?([^:]+)(:(\d+))?$/
 
-  private String     host           = null
-  private int        port           = DEFAULT_WINRM_PORT
-  private String     username       = null
-  private String     password       = null
+  private String host = null
+  private int port = DEFAULT_WINRM_PORT
+  private String username = null
+  private String password = null
 
   private final WinRMOptions options
 
-  protected Logger logger           = null
+  protected Logger logger = null
 
   SessionDelegate(WinRMOptions options) {
     this.options = options
@@ -88,18 +88,18 @@ class SessionDelegate {
 
     def connectionOptions = new ConnectionOptions()
 
-    connectionOptions[ADDRESS]          = host
-    connectionOptions[PORT]             = port
-    connectionOptions[USERNAME]         = username
-    connectionOptions[PASSWORD]         = password
+    connectionOptions[ADDRESS] = host
+    connectionOptions[PORT] = port
+    connectionOptions[USERNAME] = username
+    connectionOptions[PASSWORD] = password
     connectionOptions[OPERATING_SYSTEM] = WINDOWS
-    connectionOptions[CONNECTION_TYPE]  = WINRM_INTERNAL
+    connectionOptions[CONNECTION_TYPE] = WINRM_INTERNAL
 
-     // TODO: add support for HTTPS
+    // TODO: add support for HTTPS
 
-    connectionOptions[WINRM_TIMEMOUT]   = "PT${options.maxWait / 1000}.${options.maxWait % 1000}S".toString()
+    connectionOptions[WINRM_TIMEMOUT] = "PT${options.maxWait / 1000}.${options.maxWait % 1000}S".toString()
 
-    OverthereConnection connection = Overthere.getConnection(CIFS_PROTOCOL, connectionOptions)
+    CifsWinRmConnection connection = new CifsWinRmConnection('cifs', connectionOptions)
 
     cl.delegate = this
     cl.resolveStrategy = DELEGATE_FIRST

@@ -96,6 +96,7 @@ class DefaultWinRM {
   static boolean isVerbose() {
     options.isVerbose()
   }
+
   static void setVerbose(boolean verbose) {
     options.setVerbose(verbose)
   }

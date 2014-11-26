@@ -19,7 +19,9 @@ package com.aestasit.winrm.log
 interface Logger {
 
   void info(String message)
+
   void warn(String message)
+
   void debug(String message)
-  
+
 }

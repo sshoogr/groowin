@@ -34,7 +34,7 @@ class ExecTest extends BaseIntegrationTest {
 
   @Test
   void testCommandCreateFile() {
-    engine.remoteManagement('vagrant:vagrant@192.168.56.101') {
+    engine.remoteManagement('vagrant:vagrant@192.168.56.101:5985') {
       exec('echo.', 'This is a test string in a test file', '>', 'c:\\temp\\testEcho.file')
       exec('del', 'c:\\temp\\testEcho.file')
     }
@@ -66,6 +66,7 @@ class ExecTest extends BaseIntegrationTest {
   @Test
   void testTimeout() throws Exception {
     engine.remoteManagement {
+
       exec('timeout', '200')
     }
   }

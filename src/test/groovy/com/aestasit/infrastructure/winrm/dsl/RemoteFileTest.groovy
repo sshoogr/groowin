@@ -24,7 +24,7 @@ class RemoteFileTest {
   String user = 'user'
   String password = 'secret1234'
 
-  @Test
+//  @Test
   void testLocalFileCreation() {
     def filepath = 'C:/temp/new.csv'
     RemoteFile file = new RemoteFile(host, user, password, filepath)

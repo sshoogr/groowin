@@ -17,6 +17,7 @@
 package com.aestasit.infrastructure.winrm
 
 import org.junit.Test
+import com.aestasit.infrastructure.winrm.exception.WinRMException
 
 /**
  * Test exception creation.
@@ -28,6 +29,6 @@ class ExceptionTest {
 
   @Test
   void testException() {
-    new com.aestasit.infrastructure.winrm.exception.WinRMException("Test Exception")
+    new WinRMException("Test Exception")
   }
 }

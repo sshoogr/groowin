@@ -16,69 +16,81 @@
 
 package com.aestasit.infrastructure.winrm.dsl
 
-import com.aestasit.infrastructure.winrm.log.Logger
+import com.aestasit.infrastructure.winrm.WinRMException
+import groovy.transform.Canonical
+import jcifs.smb.NtlmPasswordAuthentication
+import jcifs.smb.SmbFile
 
 /**
  * This class represents a remote file providing methods to access file's content.
  *
  * @author Sergey Korenko
- *
  */
+@Canonical(includes = ['host', 'user', 'password', 'destinationFilepath'])
 class RemoteFile {
+  String host
+  String user
+  String password
+  String destinationFilepath
 
-  private final SessionDelegate delegate
-  private final String destination
+  SmbFile remoteFile
 
-  protected Logger logger
+  void initialize() {
+    destinationFilepath = destinationFilepath.replace('\\', '/')
+    if (destinationFilepath.length() < 2) {
+      throw new WinRMException("Local file path [$destinationFilepath] on a remote host is too short")
+    }
+    if (destinationFilepath[1] != ':') {
+      throw new WinRMException("Local file path [$destinationFilepath] is not correct! The second symbol has to be a colon(:) symbol!")
+    }
+    if (destinationFilepath.length() > 2 && destinationFilepath[2] != '/') {
+      throw new WinRMException("Local file path [$destinationFilepath] is not correct! It is expected a separator symbol(\\) after a colon(:) symbol!")
+    }
 
+    // https??
+    NtlmPasswordAuthentication authentication = new NtlmPasswordAuthentication(null, user, password)
+    def smbFilePath = convertToSmbFileFormat()
+    remoteFile = new SmbFile(smbFilePath, authentication)
+  }
 
-  RemoteFile(SessionDelegate delegate, String destination) {
-    this.delegate = delegate
-    this.destination = destination
-    this.logger = delegate.logger
+  /*
+    * Converts local Windows path of a file on a remote host to samba path with administrative shares.
+    * For example, [C:\temp\test.txt] file on remote host[TestMachine] will be converted to
+    * [smb://TestMachine/C$/temp/test.txt]
+    */
+  private String convertToSmbFileFormat() {
+    "smb://${host}/${destinationFilepath[0]}\$/${destinationFilepath.substring(2)}"
   }
 
   String getText() {
-    String content = null
-    logger.debug 'Get file content using jcifs'
-    content
+    remoteFile.inputStream.text
   }
 
   void setText(String text) {
-    logger.debug "Set new file content[=$text] via jcifs"
+    remoteFile.outputStream << text
   }
 
   void saveEmpty() {
-    delegate.exec('echo.', '>', destination)
+    remoteFile.createNewFile()
   }
 
   boolean canRead() {
-    boolean readable = false
-    logger.debug 'Check if file is readable via jcifs'
-    readable
+    remoteFile.canRead()
   }
 
   boolean canWrite() {
-    boolean writable = false
-    logger.debug 'Check if file is writable via jcifs'
-    writable
+    remoteFile.canWrite()
   }
 
   boolean isHidden() {
-    boolean hidden = false
-    logger.debug 'Check if file is hidden via jcifs'
-    hidden
+    remoteFile.isHidden()
   }
 
   long lastModified() {
-    long lastModified = 0l
-    logger.debug 'get last modification date via jcifs'
-    lastModified
+    remoteFile.lastModified
   }
 
   long length() {
-    long length = 0l
-    logger.debug 'Get file size via jcifs'
-    length
+    remoteFile.length()
   }
 }

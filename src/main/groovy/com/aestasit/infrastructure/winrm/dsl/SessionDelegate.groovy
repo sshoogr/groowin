@@ -66,7 +66,9 @@ class SessionDelegate {
   }
 
   RemoteFile remoteFile(String destination) {
-    new RemoteFile(this, destination)
+    def file = new RemoteFile(host, user, password, destination)
+    file.initialize()
+    file
   }
 
   String getHost() {

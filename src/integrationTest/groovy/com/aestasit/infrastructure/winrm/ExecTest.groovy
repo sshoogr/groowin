@@ -21,12 +21,12 @@ import org.junit.Test
 class ExecTest extends BaseIntegrationTest {
 
   @Test
-  void testTypeHostsFile() {
+  void testTypeHostFiles() {
     engine.remoteManagement {
       exec('type', 'c:\\Windows\\System32\\drivers\\etc\\hosts')
       exec(
-        command: 'type', 
-        arguments: [ 'c:\\Windows\\System32\\drivers\\etc\\hosts' ],
+        command: 'type',
+        arguments: [ 'd:\\Windows\\System32\\drivers\\etc\\hosts' ],
         failOnError: false
       )
     }
@@ -34,9 +34,10 @@ class ExecTest extends BaseIntegrationTest {
 
   @Test
   void testCommandCreateFile() {
-    engine.remoteManagement('vagrant:vagrant@192.168.56.101:5985') {
-      exec('echo.', 'This is a test string in a test file', '>', 'c:\\temp\\testEcho.file')
-      exec('del', 'c:\\temp\\testEcho.file')
+    engine.remoteManagement('vagrant:VinniPuh_01@192.168.25.25:5985') {
+      exec('mkdir', 'c:\\tempGroowin')
+      exec('echo.', 'This is a test string in a test file', '>', 'c:\\tempGroowin\\testEcho.file')
+      exec('rmdir', '/S','/Q','c:\\tempGroowin')
     }
   }
 
@@ -66,7 +67,7 @@ class ExecTest extends BaseIntegrationTest {
   @Test
   void testTimeout() throws Exception {
     engine.remoteManagement {
-
+      // TODO Update WinRM client to support Input redirection
       exec('timeout', '200')
     }
   }

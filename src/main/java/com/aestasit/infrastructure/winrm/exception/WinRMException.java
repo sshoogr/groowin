@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.aestasit.infrastructure.winrm;
+package com.aestasit.infrastructure.winrm.exception;
 
 /**
  * Generic exception to be thrown in exceptional situations.
@@ -30,5 +30,9 @@ public class WinRMException extends RuntimeException {
 
   public WinRMException(String message) {
     super(message);
+  }
+
+  public WinRMException(Throwable cause) {
+    super(cause);
   }
 }

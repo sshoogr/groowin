@@ -16,7 +16,6 @@
 
 package com.aestasit.infrastructure.winrm
 
-import com.aestasit.infrastructure.winrm.WinRMOptions
 import com.aestasit.infrastructure.winrm.dsl.WinRMDslEngine
 import com.aestasit.infrastructure.winrm.log.SysOutLogger
 import org.junit.BeforeClass

@@ -16,7 +16,7 @@
 
 package com.aestasit.infrastructure.winrm.dsl
 
-import com.aestasit.infrastructure.winrm.WinRMException
+import com.aestasit.infrastructure.winrm.exception.WinRMException
 
 import static FileSetType.*
 

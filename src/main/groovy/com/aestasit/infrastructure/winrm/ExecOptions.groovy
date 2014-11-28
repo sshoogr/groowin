@@ -23,7 +23,6 @@ package com.aestasit.infrastructure.winrm
  *
  */
 class ExecOptions extends CommonOptions {
-
   Boolean showOutput = true
   Boolean showCommand = true
 

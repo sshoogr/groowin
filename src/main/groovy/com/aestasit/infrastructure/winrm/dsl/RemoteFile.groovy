@@ -16,10 +16,7 @@
 
 package com.aestasit.infrastructure.winrm.dsl
 
-import com.xebialabs.overthere.cifs.CifsFile
-import com.xebialabs.overthere.cifs.winrm.CifsWinRmConnection
-
-import static org.apache.commons.io.FilenameUtils.separatorsToWindows
+import com.aestasit.infrastructure.winrm.log.Logger
 
 /**
  * This class represents a remote file providing methods to access file's content.
@@ -32,25 +29,23 @@ class RemoteFile {
   private final SessionDelegate delegate
   private final String destination
 
+  protected Logger logger
+
+
   RemoteFile(SessionDelegate delegate, String destination) {
     this.delegate = delegate
     this.destination = destination
+    this.logger = delegate.logger
   }
 
   String getText() {
     String content = null
-    delegate.cifsConnection { CifsWinRmConnection connection ->
-      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
-      content = remoteFile.inputStream.text
-    }
+    logger.debug 'Get file content using jcifs'
     content
   }
 
   void setText(String text) {
-    delegate.cifsConnection { CifsWinRmConnection connection ->
-      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
-      remoteFile.outputStream << text
-    }
+    logger.debug "Set new file content[=$text] via jcifs"
   }
 
   void saveEmpty() {
@@ -59,46 +54,31 @@ class RemoteFile {
 
   boolean canRead() {
     boolean readable = false
-    delegate.cifsConnection { CifsWinRmConnection connection ->
-      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
-      readable = remoteFile.canRead()
-    }
+    logger.debug 'Check if file is readable via jcifs'
     readable
   }
 
   boolean canWrite() {
     boolean writable = false
-    delegate.cifsConnection { CifsWinRmConnection connection ->
-      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
-      writable = remoteFile.canWrite()
-    }
+    logger.debug 'Check if file is writable via jcifs'
     writable
   }
 
   boolean isHidden() {
     boolean hidden = false
-    delegate.cifsConnection { CifsWinRmConnection connection ->
-      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
-      hidden = remoteFile.isHidden()
-    }
+    logger.debug 'Check if file is hidden via jcifs'
     hidden
   }
 
   long lastModified() {
     long lastModified = 0l
-    delegate.cifsConnection { CifsWinRmConnection connection ->
-      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
-      lastModified = remoteFile.lastModified()
-    }
+    logger.debug 'get last modification date via jcifs'
     lastModified
   }
 
   long length() {
     long length = 0l
-    delegate.cifsConnection { CifsWinRmConnection connection ->
-      CifsFile remoteFile = connection.getFile(separatorsToWindows(destination))
-      length = remoteFile.length()
-    }
+    logger.debug 'Get file size via jcifs'
     length
   }
 }

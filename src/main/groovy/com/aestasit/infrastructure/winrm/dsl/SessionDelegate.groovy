@@ -22,13 +22,17 @@ import com.aestasit.infrastructure.winrm.WinRMOptions
 import com.aestasit.infrastructure.winrm.client.WinRMClient
 import com.aestasit.infrastructure.winrm.log.Logger
 import com.aestasit.infrastructure.winrm.log.Slf4jLogger
+import jcifs.smb.SmbFile
 
 import java.util.regex.Pattern
+
+import static org.apache.commons.io.FilenameUtils.*
 
 import static com.aestasit.infrastructure.winrm.dsl.FileSetType.UNKNOWN
 import static groovy.lang.Closure.DELEGATE_FIRST
 
 import static com.aestasit.infrastructure.winrm.client.util.Constants.*
+import static com.aestasit.infrastructure.winrm.dsl.FileSetType.*
 import static org.apache.commons.io.FilenameUtils.normalizeNoEndSeparator
 import static org.apache.commons.io.FilenameUtils.separatorsToWindows
 
@@ -278,14 +282,12 @@ class SessionDelegate {
    */
   def cp(File sourceFile, String dst) {
     logger.debug 'Copy local file to remote destination'
-//    connectWinRM { WinRMClient client ->
-//      CopyOptionsDelegate copySpec = new CopyOptionsDelegate()
-//      copySpec.with {
-//        from { localFile(sourceFile) }
-//        into { remoteDir(dst) }
-//      }
-//      upload(copySpec, client)
-//    }
+    CopyOptionsDelegate copySpec = new CopyOptionsDelegate()
+    copySpec.with {
+      from { localFile(sourceFile) }
+      into { remoteDir(dst) }
+    }
+    upload(copySpec)
   }
 
   def cp(@DelegatesTo(strategy = DELEGATE_FIRST, value = CopyOptionsDelegate) Closure cl) {
@@ -294,13 +296,12 @@ class SessionDelegate {
     cl.resolveStrategy = DELEGATE_FIRST
     cl()
     validateCopySpec(copySpec)
-//    cifsConnection { CifsWinRmConnection connection ->
-//      if (copySpec.source.type == LOCAL) {
-//        upload(copySpec, connection)
-//      } else if (copySpec.source.type == REMOTE) {
-//        download(copySpec, connection)
-//      }
-//    }
+
+    if (copySpec.source.type == LOCAL) {
+      upload(copySpec)
+    } else if (copySpec.source.type == REMOTE) {
+      download(copySpec)
+    }
   }
 
   private void validateCopySpec(CopyOptionsDelegate copySpec) {
@@ -309,116 +310,116 @@ class SessionDelegate {
       throw new WinRMException("Either copying source (from) or target (into) is of unknown type!")
     }
     if (copySpec.source.type == copySpec.target.type) {
-      throw new WinRMException("copying source (from) and target (into) shouldn't be both local or both remote!")
+      throw new WinRMException("Copying source (from) and target (into) shouldn't be both local or both remote!")
     }
   }
 
-//  private void download(CopyOptionsDelegate copySpec, CifsWinRmConnection connection) {
-//    logger.info("> Downloading remote file(s)")
-//
-//    // Download remote files.
-//    copySpec.source.remoteFiles.each { String srcFile ->
-//      copySpec.target.localDirs.each { File dstDir ->
-//        dstDir.mkdirs()
-//        doGet(srcFile, new File(dstDir.canonicalPath, getName(srcFile)), connection)
-//      }
-//      copySpec.target.localFiles.each { File dstFile ->
-//        dstFile.parentFile.mkdirs()
-//        doGet(srcFile, dstFile, connection)
-//      }
-//    }
+  private void download(CopyOptionsDelegate copySpec) {
+    logger.info("> Downloading remote file(s)")
 
-//    // Download remote directories.
-//    copySpec.source.remoteDirs.each { String srcDir ->
-//      remoteEachFileRecurse(srcDir, connection) { String srcFile ->
-//        copySpec.target.localDirs.each { File dstDir ->
-//          def dstFile = new File(dstDir.canonicalPath, relativePath(srcDir, srcFile))
-//          dstFile.parentFile.mkdirs()
-//          doGet(srcFile, new File(dstDir.canonicalPath, relativePath(srcDir, srcFile)), connection)
-//        }
-//      }
-//      copySpec.target.localFiles.each { File dstFile ->
-//        logger.warn("Can't copy remote directory ($srcDir) to a local file (${dstFile.path})!")
-//      }
-//    }
-//  }
+    // Download remote files.
+    copySpec.source.remoteFiles.each { String srcFile ->
+      copySpec.target.localDirs.each { File dstDir ->
+        dstDir.mkdirs()
+        doGet(srcFile, new File(dstDir.canonicalPath, getName(srcFile)))
+      }
+      copySpec.target.localFiles.each { File dstFile ->
+        dstFile.parentFile.mkdirs()
+        doGet(srcFile, dstFile)
+      }
+    }
 
-//  private void upload(CopyOptionsDelegate copySpec, CifsWinRmConnection connection) {
-//    def remoteDirs = copySpec.target.remoteDirs
-//    def remoteFiles = copySpec.target.remoteFiles
-//    createRemoteFolderStructure(remoteFiles, remoteDirs, connection)
-//    // Upload local files and directories.
-//    def allLocalFiles = copySpec.source.localFiles + copySpec.source.localDirs
-//    uploadLocalFiles(allLocalFiles, remoteFiles, remoteDirs, connection)
-//  }
+    // Download remote directories.
+    copySpec.source.remoteDirs.each { String srcDir ->
+      remoteEachFileRecurse(srcDir) { String srcFile ->
+        copySpec.target.localDirs.each { File dstDir ->
+          def dstFile = new File(dstDir.canonicalPath, relativePath(srcDir, srcFile))
+          dstFile.parentFile.mkdirs()
+          doGet(srcFile, new File(dstDir.canonicalPath, relativePath(srcDir, srcFile)))
+        }
+      }
+      copySpec.target.localFiles.each { File dstFile ->
+        logger.warn("Can't copy remote directory ($srcDir) to a local file (${dstFile.path})!")
+      }
+    }
+  }
 
-//  private void createRemoteFolderStructure(def remoteFiles, def remoteDirs, CifsWinRmConnection connection) {
-//    remoteFiles.each { String dstFile ->
-//      def dstDir = getFullPathNoEndSeparator(dstFile)
-//      createRemoteDirectory(dstDir, connection)
-//    }
-//    remoteDirs.each { String dstDir ->
-//      createRemoteDirectory(dstDir, connection)
-//    }
-//  }
+  private void upload(CopyOptionsDelegate copySpec) {
+    def remoteDirs = copySpec.target.remoteDirs
+    def remoteFiles = copySpec.target.remoteFiles
+    createRemoteFolderStructure(remoteFiles, remoteDirs)
+    // Upload local files and directories.
+    def allLocalFiles = copySpec.source.localFiles + copySpec.source.localDirs
+    uploadLocalFiles(allLocalFiles, remoteFiles, remoteDirs)
+  }
 
-//  private void uploadLocalFiles(def allLocalFiles, def remoteFiles, def remoteDirs, CifsWinRmConnection connection) {
-//    logger.info("> Uploading local file(s)")
-//    allLocalFiles.each { File sourcePath ->
-//      if (sourcePath.isDirectory()) {
-//        sourcePath.eachFileRecurse { File childPath ->
-//          def relativePath = relativePath(sourcePath, childPath)
-//          remoteDirs.each { String dstDir ->
-//            if (childPath.isDirectory()) {
-//              def dstParentDir = separatorsToWindows(concat(dstDir, relativePath))
-//              createRemoteDirectory(dstParentDir, connection)
-//            } else {
-//              def dstPath = separatorsToWindows(concat(dstDir, relativePath))
-//              doPut(childPath.canonicalFile, dstPath, connection)
-//            }
-//          }
-//        }
-//      } else {
-//        remoteDirs.each { String dstDir ->
-//          def dstPath = separatorsToWindows(concat(dstDir, sourcePath.name))
-//          doPut(sourcePath, dstPath, connection)
-//        }
-//        remoteFiles.each { String dstFile ->
-//          doPut(sourcePath, dstFile, connection)
-//        }
-//      }
-//    }
-//  }
+  private void createRemoteFolderStructure(def remoteFiles, def remoteDirs) {
+    remoteFiles.each { String dstFile ->
+      def dstDir = getFullPathNoEndSeparator(dstFile)
+      createRemoteDirectory(dstDir)
+    }
+    remoteDirs.each { String dstDir ->
+      createRemoteDirectory(dstDir)
+    }
+  }
 
-//  private void remoteEachFileRecurse(String remoteDir, CifsWinRmConnection connection, Closure cl) {
-//    logger.info("> Getting file list from ${remoteDir} directory")
-//    List<CifsFile> entries = connection.getFile(separatorsToWindows(remoteDir)).listFiles()
-//    entries.each { CifsFile entry ->
-//      def childPath = separatorsToWindows(concat(remoteDir, entry.name))
-//      if (entry.isDirectory()) {
-//        if (!(entry.name in ['.', '..'])) {
-//          remoteEachFileRecurse(childPath, connection, cl)
-//        }
-//      } else {
-//        cl(childPath)
-//      }
-//    }
-//  }
+  private void uploadLocalFiles(def allLocalFiles, def remoteFiles, def remoteDirs) {
+    logger.info("> Uploading local file(s)")
+    allLocalFiles.each { File sourcePath ->
+      if (sourcePath.isDirectory()) {
+        sourcePath.eachFileRecurse { File childPath ->
+          def relativePath = relativePath(sourcePath, childPath)
+          remoteDirs.each { String dstDir ->
+            if (childPath.isDirectory()) {
+              def dstParentDir = separatorsToWindows(concat(dstDir, relativePath))
+              createRemoteDirectory(dstParentDir)
+            } else {
+              def dstPath = separatorsToWindows(concat(dstDir, relativePath))
+              doPut(childPath.canonicalFile, dstPath)
+            }
+          }
+        }
+      } else {
+        remoteDirs.each { String dstDir ->
+          def dstPath = separatorsToWindows(concat(dstDir, sourcePath.name))
+          doPut(sourcePath, dstPath)
+        }
+        remoteFiles.each { String dstFile ->
+          doPut(sourcePath, dstFile)
+        }
+      }
+    }
+  }
 
-//  private void doPut(File srcFile, String dst, CifsWinRmConnection connection) {
-//    logger.info("> ${srcFile.canonicalPath} => ${dst}")
-//    try {
-//      def outputStream = connection.getFile(dst).outputStream
-//      outputStream << srcFile.newInputStream()
-//    } catch (IOException e) {
-//      throw new WinRMException("File [$srcFile.canonicalPath] upload failed with a message $e.message")
-//    }
-//  }
+  private void remoteEachFileRecurse(String remoteDir, Closure cl) {
+    logger.info("> Getting file list from ${remoteDir} directory")
+    List<SmbFile> entries = remoteFile(separatorsToWindows(remoteDir)).listFiles()
+    entries.each { SmbFile entry ->
+      def childPath = separatorsToWindows(concat(remoteDir, entry.name))
+      if (entry.isDirectory()) {
+        if (!(entry.name in ['.', '..'])) {
+          remoteEachFileRecurse(childPath, cl)
+        }
+      } else {
+        cl(childPath)
+      }
+    }
+  }
 
-//  private void doGet(String srcFile, File dstFile, CifsWinRmConnection connection) {
-//    logger.info("> ${srcFile} => ${dstFile.canonicalPath}")
-//    dstFile.newOutputStream() << connection.getFile(srcFile).inputStream
-//  }
+  private void doPut(File srcFile, String dst) {
+    logger.info("> ${srcFile.canonicalPath} => ${dst}")
+
+    try {
+      remoteFile(dst).outputStream << srcFile.newInputStream()
+    } catch (IOException e) {
+      throw new WinRMException("File [$srcFile.canonicalPath] upload failed with a message $e.message")
+    }
+  }
+
+  private void doGet(String srcFile, File dstFile) {
+    logger.info("> ${srcFile} => ${dstFile.canonicalPath}")
+    dstFile.newOutputStream() << remoteFile(srcFile).inputStream
+  }
 
   static private String relativePath(File parent, File child) {
     separatorsToWindows(child.canonicalPath.replace(parent.canonicalPath, '')).replaceAll('^\\\\', '')
@@ -431,22 +432,15 @@ class SessionDelegate {
   }
 
 
-//  private void createRemoteDirectory(String dstFile, CifsWinRmConnection connection) {
-//    if (options.verbose) {
-//      logger.debug("> Check if $dstFile exists")
-//    }
-//    boolean dirExists = connection.getFile(dstFile).exists()
-//    if (!dirExists) {
-//      logger.debug("Creating remote directory: $dstFile")
-//      mkdir(dstFile, connection)
-//    }
-//  }
-//
-//  private void mkdir(String folderToCreate, CifsWinRmConnection connection) {
-//    if (options.verbose) {
-//      logger.info("> make directory ${folderToCreate}")
-//    }
-//    connection.getFile(folderToCreate).mkdir()
-//  }
-
+  private void createRemoteDirectory(String dstFile) {
+    if (options.verbose) {
+      logger.debug("> Check if $dstFile exists")
+    }
+    def file = remoteFile(dstFile)
+    boolean dirExists = file.exists()
+    if (!dirExists) {
+      logger.debug("Creating remote directory: $dstFile")
+      file.mkdir()
+    }
+  }
 }

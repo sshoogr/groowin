@@ -93,4 +93,24 @@ class RemoteFile {
   long length() {
     remoteFile.length()
   }
+
+  boolean exists(){
+    remoteFile.exists()
+  }
+
+  void mkdir(){
+    remoteFile.mkdir()
+  }
+
+  OutputStream getOutputStream(){
+    remoteFile.outputStream
+  }
+
+  InputStream getInputStream(){
+    remoteFile.inputStream
+  }
+
+  SmbFile[] listFiles(){
+    remoteFile.listFiles()
+  }
 }

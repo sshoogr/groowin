@@ -39,5 +39,4 @@ class BaseIntegrationTest {
     }
     engine = new WinRMDslEngine(options)
   }
-
 }

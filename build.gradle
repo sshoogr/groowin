@@ -44,6 +44,7 @@ dependencies {
   compile 'com.aestasit.infrastructure.winrm:groovy-winrm-client:0.1'
 
   testCompile "junit:junit:${junitVersion}"
+  testCompile 'org.mockito:mockito-all:1.10.8'
 }
 
 sourceSets {

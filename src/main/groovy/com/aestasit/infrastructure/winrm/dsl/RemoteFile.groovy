@@ -17,6 +17,7 @@
 package com.aestasit.infrastructure.winrm.dsl
 
 import com.aestasit.infrastructure.winrm.WinRMException
+import groovy.transform.AutoClone
 import groovy.transform.Canonical
 import jcifs.smb.NtlmPasswordAuthentication
 import jcifs.smb.SmbFile
@@ -27,6 +28,7 @@ import jcifs.smb.SmbFile
  * @author Sergey Korenko
  */
 @Canonical(includes = ['host', 'user', 'password', 'destinationFilepath'])
+@AutoClone
 class RemoteFile {
   String host
   String user
@@ -34,6 +36,7 @@ class RemoteFile {
   String destinationFilepath
 
   SmbFile remoteFile
+  String name
 
   void initialize() {
     destinationFilepath = destinationFilepath.replace('\\', '/')
@@ -49,8 +52,8 @@ class RemoteFile {
 
     // https??
     NtlmPasswordAuthentication authentication = new NtlmPasswordAuthentication(null, user, password)
-    def smbFilePath = convertToSmbFileFormat()
-    remoteFile = new SmbFile(smbFilePath, authentication)
+    name = convertToSmbFileFormat()
+    remoteFile = new SmbFile(name, authentication)
   }
 
   /*
@@ -59,7 +62,7 @@ class RemoteFile {
     * [smb://TestMachine/C$/temp/test.txt]
     */
   private String convertToSmbFileFormat() {
-    "smb://${host}/${destinationFilepath[0]}\$/${destinationFilepath.substring(2)}"
+    "smb://${host}/${destinationFilepath[0]}\$/${destinationFilepath.substring(3)}"
   }
 
   String getText() {
@@ -94,6 +97,10 @@ class RemoteFile {
     remoteFile.length()
   }
 
+  boolean isDirectory(){
+    remoteFile.isDirectory()
+  }
+
   boolean exists(){
     remoteFile.exists()
   }
@@ -110,7 +117,12 @@ class RemoteFile {
     remoteFile.inputStream
   }
 
-  SmbFile[] listFiles(){
-    remoteFile.listFiles()
+  RemoteFile[] listFiles() {
+    remoteFile.listFiles().collect({
+      def readFile = this.clone()
+      readFile.remoteFile = it
+      readFile.name = it.name
+      readFile
+    }).toArray()
   }
 }

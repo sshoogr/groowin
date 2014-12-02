@@ -109,6 +109,10 @@ class RemoteFile {
     remoteFile.mkdir()
   }
 
+  void delete(){
+    remoteFile.delete()
+  }
+
   OutputStream getOutputStream(){
     remoteFile.outputStream
   }

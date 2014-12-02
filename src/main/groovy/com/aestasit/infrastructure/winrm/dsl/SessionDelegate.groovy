@@ -22,7 +22,6 @@ import com.aestasit.infrastructure.winrm.WinRMOptions
 import com.aestasit.infrastructure.winrm.client.WinRMClient
 import com.aestasit.infrastructure.winrm.log.Logger
 import com.aestasit.infrastructure.winrm.log.Slf4jLogger
-import jcifs.smb.SmbFile
 
 import java.util.regex.Pattern
 
@@ -134,6 +133,12 @@ class SessionDelegate {
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
   def connectWinRM(@DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl) {
+    println "protocol = ${protocol}"
+    println "host = ${host}"
+    println "port = ${port}"
+    println "username = ${username}"
+    println "password = ${password}"
+
     WinRMClient client = new WinRMClient(protocol, host, port, username, password)
     client.initialize()
     cl.delegate = this
@@ -393,11 +398,11 @@ class SessionDelegate {
 
   private void remoteEachFileRecurse(String remoteDir, Closure cl) {
     logger.info("> Getting file list from ${remoteDir} directory")
-    List<SmbFile> entries = remoteFile(separatorsToWindows(remoteDir)).listFiles()
-    entries.each { SmbFile entry ->
-      def childPath = separatorsToWindows(concat(remoteDir, entry.name))
-      if (entry.isDirectory()) {
-        if (!(entry.name in ['.', '..'])) {
+    List<RemoteFile> entries = remoteFile(separatorsToWindows(remoteDir)).listFiles()
+    entries.each { RemoteFile file ->
+      def childPath = separatorsToWindows(concat(remoteDir, file.name))
+      if (file.isDirectory()) {
+        if (!(file.name in ['.', '..'])) {
           remoteEachFileRecurse(childPath, cl)
         }
       } else {

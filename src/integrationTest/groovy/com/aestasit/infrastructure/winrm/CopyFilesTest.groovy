@@ -16,7 +16,6 @@
 
 package com.aestasit.infrastructure.winrm
 
-import org.junit.AfterClass
 import org.junit.Test
 
 class CopyFilesTest extends BaseIntegrationTest {
@@ -48,6 +47,8 @@ class CopyFilesTest extends BaseIntegrationTest {
         from { localDir 'c:\\Windows\\System32\\drivers\\etc\\' }
         into { remoteDir 'C:\\temporary' }
       }
+
+      exec('rmdir', '/s', '/q', 'C:\\temporary')
     }
   }
 
@@ -56,13 +57,6 @@ class CopyFilesTest extends BaseIntegrationTest {
     engine.remoteManagement {
       cp(new File('./test.file').absoluteFile.canonicalPath, 'C:\\temp')
       exec('del', '/F', '/Q', 'C:\\temp\\test.file')
-    }
-  }
-
-  @AfterClass
-  static void cleanRemoteFileSystem(){
-    engine.remoteManagement {
-      exec('rmdir', '/s', '/q', 'C:\\temporary')
     }
   }
 }

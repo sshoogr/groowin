@@ -415,7 +415,12 @@ class SessionDelegate {
     logger.info("> ${srcFile.canonicalPath} => ${dst}")
 
     try {
-      remoteFile(dst).outputStream << srcFile.newInputStream()
+      def newInputStream = srcFile.newInputStream()
+      def outputStream = remoteFile(dst).outputStream
+      outputStream << newInputStream
+      outputStream.close()
+      newInputStream.close()
+
     } catch (IOException e) {
       throw new WinRMException("File [$srcFile.canonicalPath] upload failed with a message $e.message")
     }
@@ -423,7 +428,11 @@ class SessionDelegate {
 
   private void doGet(String srcFile, File dstFile) {
     logger.info("> ${srcFile} => ${dstFile.canonicalPath}")
-    dstFile.newOutputStream() << remoteFile(srcFile).inputStream
+    def newOutputStream = dstFile.newOutputStream()
+    def inputStream = remoteFile(srcFile).inputStream
+    newOutputStream << inputStream
+    newOutputStream.close()
+    inputStream.close()
   }
 
   static private String relativePath(File parent, File child) {
@@ -445,7 +454,7 @@ class SessionDelegate {
     boolean dirExists = file.exists()
     if (!dirExists) {
       logger.debug("Creating remote directory: $dstFile")
-      file.mkdir()
+      exec('mkdir', dstFile)
     }
   }
 }

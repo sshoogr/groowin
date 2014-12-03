@@ -71,6 +71,7 @@ class RemoteFile {
 
   void setText(String text) {
     remoteFile.outputStream << text
+    remoteFile.outputStream.close()
   }
 
   void saveEmpty() {

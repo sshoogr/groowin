@@ -64,6 +64,7 @@ class HttpsRemoteFileTest extends BaseHttpsIntegrationTest {
       RemoteFile[] files = folder.listFiles()
       assert files.length == 2
       assert files[0].text.contains('Gromit')
+      assert files[1].text.contains('Gromit')
 
       exec('rmdir', '/s', '/q', folderName)
     }

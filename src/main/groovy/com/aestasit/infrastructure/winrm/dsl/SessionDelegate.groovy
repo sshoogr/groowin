@@ -17,7 +17,7 @@
 package com.aestasit.infrastructure.winrm.dsl
 
 import com.aestasit.infrastructure.winrm.ExecOptions
-import com.aestasit.infrastructure.winrm.exception.WinRMException
+import com.aestasit.infrastructure.winrm.WinRMException
 import com.aestasit.infrastructure.winrm.WinRMOptions
 import com.aestasit.infrastructure.winrm.client.WinRMClient
 import com.aestasit.infrastructure.winrm.log.Logger
@@ -25,15 +25,12 @@ import com.aestasit.infrastructure.winrm.log.Slf4jLogger
 
 import java.util.regex.Pattern
 
-import static org.apache.commons.io.FilenameUtils.*
-
 import static com.aestasit.infrastructure.winrm.dsl.FileSetType.UNKNOWN
 import static groovy.lang.Closure.DELEGATE_FIRST
 
 import static com.aestasit.infrastructure.winrm.client.util.Constants.*
 import static com.aestasit.infrastructure.winrm.dsl.FileSetType.*
-import static org.apache.commons.io.FilenameUtils.normalizeNoEndSeparator
-import static org.apache.commons.io.FilenameUtils.separatorsToWindows
+import static org.apache.commons.io.FilenameUtils.*
 
 
 /**
@@ -133,12 +130,6 @@ class SessionDelegate {
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
   def connectWinRM(@DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl) {
-    println "protocol = ${protocol}"
-    println "host = ${host}"
-    println "port = ${port}"
-    println "username = ${username}"
-    println "password = ${password}"
-
     WinRMClient client = new WinRMClient(protocol, host, port, username, password)
     client.initialize()
     cl.delegate = this
@@ -165,9 +156,6 @@ class SessionDelegate {
    * @return result of the command execution on a remote machine. The result is an instance of <code>CommandOutput</code>.
    */
   CommandOutput exec(String cmd, String... arguments) {
-    println "cmd = $cmd"
-    println "arguments = $arguments"
-
     doExec(cmd, new ExecOptions(options.execOptions), arguments)
   }
 
@@ -247,7 +235,7 @@ class SessionDelegate {
       if(output.exception){
         throw new WinRMException(output.exception)
       } else{
-        throw new WinRMException("Executing command line [$commandToLog] failed. Error text is [$output.errorOutput]")
+        throw new WinRMException("Executing command line [$commandToLog] failed with the error [$output.errorOutput]")
       }
     }
 
@@ -274,7 +262,7 @@ class SessionDelegate {
    */
   def cp(String sourceFile, String dst) {
     if (options.verbose) {
-      logger.debug("Copy local file represented by string $sourceFile to remote folder represented by string $dst")
+      logger.debug("Copy local file represented by string [$sourceFile] to remote folder represented by string [$dst]")
     }
     cp(new File(sourceFile), dst)
   }
@@ -420,7 +408,6 @@ class SessionDelegate {
       outputStream << newInputStream
       outputStream.close()
       newInputStream.close()
-
     } catch (IOException e) {
       throw new WinRMException("File [$srcFile.canonicalPath] upload failed with a message $e.message")
     }
@@ -428,11 +415,16 @@ class SessionDelegate {
 
   private void doGet(String srcFile, File dstFile) {
     logger.info("> ${srcFile} => ${dstFile.canonicalPath}")
+
+    try {
     def newOutputStream = dstFile.newOutputStream()
     def inputStream = remoteFile(srcFile).inputStream
     newOutputStream << inputStream
     newOutputStream.close()
     inputStream.close()
+    } catch (IOException e) {
+      throw new WinRMException("File [$dstFile.canonicalPath] download failed with a message $e.message")
+    }
   }
 
   static private String relativePath(File parent, File child) {
@@ -444,7 +436,6 @@ class SessionDelegate {
             .replace(normalizeNoEndSeparator(parent) + File.separatorChar, '')
             .replace(File.separatorChar.toString(), '\\')
   }
-
 
   private void createRemoteDirectory(String dstFile) {
     if (options.verbose) {

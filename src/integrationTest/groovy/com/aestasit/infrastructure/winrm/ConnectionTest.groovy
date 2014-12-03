@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-package com.aestasit.infrastructure.winrm.exception;
+package com.aestasit.infrastructure.winrm
 
-/**
- * Generic exception to be thrown in exceptional situations.
- *
- * @author Andrey Adamovich
- *
- */
-public class WinRMException extends RuntimeException {
+import org.junit.Test
 
-  public WinRMException(String message, Throwable cause) {
-    super(message, cause);
-  }
+class ConnectionTest extends BaseIntegrationTest {
+  @Test(expected=WinRMException.class)
+  void testFailConnection() {
+    engine.options.with {
+      defaultHost = 'some_fake_address'
+    }
 
-  public WinRMException(String message) {
-    super(message);
-  }
-
-  public WinRMException(Throwable cause) {
-    super(cause);
+    engine.remoteManagement {
+      exec('type', 'C:\\temp\\fictional.file')
+    }
   }
 }

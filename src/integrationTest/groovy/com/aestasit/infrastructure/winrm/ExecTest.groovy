@@ -66,7 +66,6 @@ class ExecTest extends BaseIntegrationTest {
   @Test
   void testTimeout() throws Exception {
     engine.remoteManagement {
-      // TODO Update WinRM client to support Input redirection
 //      exec('timeout', '200')
     }
   }

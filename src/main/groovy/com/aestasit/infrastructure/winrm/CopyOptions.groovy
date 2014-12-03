@@ -22,7 +22,6 @@ package com.aestasit.infrastructure.winrm
  * @author Andrey Adamovich
  *
  */
-
 class CopyOptions extends CommonOptions {
 
   CopyOptions() {

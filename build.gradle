@@ -41,7 +41,7 @@ dependencies {
   compile 'org.apache.httpcomponents:httpclient:4.2.1'
   compile 'org.apache.httpcomponents:httpcore:4.2.1'
   compile 'commons-codec:commons-codec:1.6'
-  compile 'com.aestasit.infrastructure.winrm:groovy-winrm-client:0.3'
+  compile 'com.aestasit.infrastructure.winrm:groovy-winrm-client:0.1'
 
   testCompile "junit:junit:${junitVersion}"
   testCompile 'org.mockito:mockito-all:1.10.8'

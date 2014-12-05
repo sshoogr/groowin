@@ -17,6 +17,7 @@
 package com.aestasit.infrastructure.winrm
 
 import org.junit.Test
+import static org.junit.Assert.*
 
 class ExecTest extends BaseIntegrationTest {
   @Test
@@ -44,15 +45,14 @@ class ExecTest extends BaseIntegrationTest {
   void testCommandMap() {
     engine.remoteManagement {
       def result = exec(command: 'dir', showOutput: false)
-      result.output.eachLine { line -> println ">>>>> OUTPUT: ${line}" }
-      println ">>>>> EXIT: ${result.exitStatus}"
+      assertTrue !result.exitStatus
     }
   }
 
   @Test
   void testOk() throws Exception {
     engine.remoteManagement {
-      assert ok('dir')
+      assertTrue ok('dir')
     }
   }
 
@@ -66,7 +66,10 @@ class ExecTest extends BaseIntegrationTest {
   @Test
   void testTimeout() throws Exception {
     engine.remoteManagement {
-//      exec('timeout', '200')
+      def output = exec('timeout', '15')
+
+      println output.exitStatus
+      println output.output
     }
   }
 }

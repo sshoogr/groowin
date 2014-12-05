@@ -33,9 +33,11 @@ class WinRMOptions extends CommonOptions {
   String defaultUser
   String defaultPassword
   int defaultPort = PORT_HTTP
-  boolean verbose = false
-  Logger logger
   String defaultProtocol = PROTOCOL_HTTP
+
+  Logger logger
+  boolean reuseConnection
+  boolean verbose
 
   // Exec options.
   ExecOptions execOptions = new ExecOptions()

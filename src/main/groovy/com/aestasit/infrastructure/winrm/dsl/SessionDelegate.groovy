@@ -23,6 +23,7 @@ import com.aestasit.infrastructure.winrm.client.WinRMClient
 import com.aestasit.infrastructure.winrm.log.Logger
 import com.aestasit.infrastructure.winrm.log.Slf4jLogger
 
+import java.util.concurrent.TimeoutException
 import java.util.regex.Pattern
 
 import static com.aestasit.infrastructure.winrm.dsl.FileSetType.UNKNOWN
@@ -50,6 +51,8 @@ class SessionDelegate {
   private final WinRMOptions options
 
   protected Logger logger
+  private WinRMClient client
+  private boolean changed
 
   SessionDelegate(WinRMOptions options) {
     this.options = options
@@ -87,19 +90,27 @@ class SessionDelegate {
     password
   }
 
+  void setChanged(changed){
+    this.changed = changed
+  }
+
   void setHost(String host) {
+    this.changed = changed || (this.host != host)
     this.host = host
   }
 
   void setPort(int port) {
+    this.changed = changed || (this.port != port)
     this.port = port
   }
 
   void setUser(String username) {
+    this.changed = changed || (this.username != username)
     this.username = username
   }
 
   void setPassword(String password) {
+    this.changed = changed || (this.password != password)
     this.password = password
   }
 
@@ -119,6 +130,42 @@ class SessionDelegate {
     }
   }
 
+  boolean isSessionOpen() {
+    client?.isConnected()
+  }
+
+  void connect() {
+    try  {
+      if (!client || !sessionOpen || changed) {
+        disconnect()
+
+        client = new WinRMClient(protocol, host, port, username, password)
+
+        if (options.verbose) {
+          logger.info(">>> Connecting to $host")
+        }
+
+        client.openShell()
+      }
+    } finally {
+      changed = false
+    }
+  }
+
+
+  void disconnect() {
+    if(sessionOpen){
+      try {
+        client.deleteShell()
+      } catch (Exception e) {
+      } finally {
+        if (options.verbose) {
+          logger.info("<<< Disconnected from $host")
+        }
+      }
+    }
+  }
+
   ////////////////////////////////////////////////////////////////////////////////////////////////
   //   ________   ________ _____
   //  |  ____\ \ / /  ____/ ____|
@@ -128,14 +175,9 @@ class SessionDelegate {
   //  |______/_/ \_\______\_____|
   //
   ////////////////////////////////////////////////////////////////////////////////////////////////
-
-  def connectWinRM(@DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl) {
-    WinRMClient client = new WinRMClient(protocol, host, port, username, password)
-    client.initialize()
-    cl.delegate = this
-    cl.resolveStrategy = DELEGATE_FIRST
-    cl(client)
-  }
+//  def execOptions(@DelegatesTo(strategy = DELEGATE_FIRST, value = ExecOptions) Closure cl) {
+//    options.execOptions(cl)
+//  }
 
   CommandOutput exec(@DelegatesTo(strategy = DELEGATE_FIRST, value = ExecOptionsDelegate) Closure cl) {
     ExecOptionsDelegate delegate = new ExecOptionsDelegate(options.execOptions)
@@ -197,20 +239,23 @@ class SessionDelegate {
   }
 
   private CommandOutput doExec(String cmd, ExecOptions options, String[] arguments = []) {
-    CommandOutput output = null
+    connect()
 
-    connectWinRM { WinRMClient client ->
-      output = catchExceptions(options) {
-        executeCommand(cmd, options, client, arguments)
-      }
+    def commandId = null
+    catchExceptions(options, commandId) {
+      commandId = client.executeCommand(cmd, arguments)
+      return getCommandExecutionResults(options, commandId)
     }
-    output
   }
 
-  private CommandOutput catchExceptions(ExecOptions options, Closure cl) {
+  private CommandOutput catchExceptions(ExecOptions options, String commandId, Closure cl) {
     try {
       return cl()
+    } catch (TimeoutException e) {
+      stopExecution(commandId)
+      failWithTimeout(options)
     } catch (WinRMException e) {
+      stopExecution(commandId)
       failWithException(options, e)
     }
   }
@@ -224,26 +269,59 @@ class SessionDelegate {
     }
   }
 
-  private CommandOutput executeCommand(String cmd, ExecOptions options, WinRMClient client, String[] args = []) {
-    def commandToLog = "$cmd ${args ? args.join(' ') : ''}"
-    if (options.showCommand) {
-      logger.info("> $commandToLog")
+  private CommandOutput failWithTimeout(ExecOptions options) {
+    setChanged(true)
+    if (options.failOnError) {
+      throw new WinRMException("Session timeout!")
+    } else {
+      logger.warn("Session timeout!")
+      return new CommandOutput(-1, "Session timeout!")
     }
+  }
 
-    com.aestasit.infrastructure.winrm.client.CommandOutput output = client.execute(cmd, args)
-    if (output.failed()) {
-      if(output.exception){
-        throw new WinRMException(output.exception)
-      } else{
-        throw new WinRMException("Executing command line [$commandToLog] failed with the error [$output.errorOutput]")
+  private CommandOutput getCommandExecutionResults(ExecOptions options, String commandId) {
+
+    def commandExecOutput = null
+    Thread thread = new Thread() {
+      void run() {
+        for (; !isInterrupted();) {
+          commandExecOutput = client.commandExecuteResults(commandId)
+          if (!commandExecOutput.commandRunning) {
+            break
+          }
+        }
       }
     }
+    thread.start()
 
-    if (options.showOutput && output.output) {
-      logger.info(output.output)
+    try {
+      thread.join(options.maxWait)
+    } catch (InterruptedException e) {
+      thread.interrupt()
+      throw new Exception(e)
     }
 
-    new CommandOutput(0, output.output)
+    if (thread.isAlive()) {
+      thread.interrupt()
+      throw new TimeoutException()
+    }
+
+    new CommandOutput(commandExecOutput.exitStatus,
+      commandExecOutput.failed() ? commandExecOutput.errorOutput : commandExecOutput.output,
+      commandExecOutput.exception)
+  }
+
+  private void stopExecution(String commandId) {
+    try {
+      if(options.verbose){
+        logger.warn("Stopping command execution with id = [$commandId]")
+      }
+
+      client.cleanupCommand(commandId)
+      client.deleteShell()
+    } catch (Exception e) {
+      logger.warn("Error occurred during stopping command execution [${e.getMessage()}]")
+    }
   }
   ////////////////////////////////////////////////////////////////////////////////////////////////
   //    ____ _____
@@ -262,7 +340,7 @@ class SessionDelegate {
    */
   def cp(String sourceFile, String dst) {
     if (options.verbose) {
-      logger.debug("Copy local file represented by string [$sourceFile] to remote folder represented by string [$dst]")
+      logger.info("Copy local file represented by string [$sourceFile] to remote folder represented by string [$dst]")
     }
     cp(new File(sourceFile), dst)
   }
@@ -274,7 +352,9 @@ class SessionDelegate {
    * @param dst name of the directory where to place a source file of a remote machine
    */
   def cp(File sourceFile, String dst) {
-    logger.debug 'Copy local file to remote destination'
+    if (options.verbose) {
+      logger.info("Copy local file[${sourceFile.name}] to remote destination [$dst]")
+    }
     CopyOptionsDelegate copySpec = new CopyOptionsDelegate()
     copySpec.with {
       from { localFile(sourceFile) }
@@ -288,7 +368,13 @@ class SessionDelegate {
     cl.delegate = copySpec
     cl.resolveStrategy = DELEGATE_FIRST
     cl()
-    validateCopySpec(copySpec)
+
+    if(!isCopyTypesDefined(copySpec)){
+      throw new WinRMException("Either copying source (from) or target (into) is of unknown type!")
+    }
+    if(!isSourceTargetDifferent(copySpec)){
+      throw new WinRMException("Copying source (from) and target (into) shouldn't be both local or both remote!")
+    }
 
     if (copySpec.source.type == LOCAL) {
       upload(copySpec)
@@ -297,18 +383,18 @@ class SessionDelegate {
     }
   }
 
-  private void validateCopySpec(CopyOptionsDelegate copySpec) {
-    if (copySpec.source.type == null || copySpec.source.type == UNKNOWN ||
-            copySpec.target.type == null || copySpec.target.type == UNKNOWN) {
-      throw new WinRMException("Either copying source (from) or target (into) is of unknown type!")
-    }
-    if (copySpec.source.type == copySpec.target.type) {
-      throw new WinRMException("Copying source (from) and target (into) shouldn't be both local or both remote!")
-    }
+  private static boolean isCopyTypesDefined(CopyOptionsDelegate copySpec) {
+    copySpec?.source?.type && copySpec?.source?.type != UNKNOWN && copySpec?.target?.type && copySpec.target.type != UNKNOWN
+  }
+
+  private static boolean isSourceTargetDifferent(CopyOptionsDelegate copySpec) {
+    copySpec.source.type != copySpec.target.type
   }
 
   private void download(CopyOptionsDelegate copySpec) {
-    logger.info("> Downloading remote file(s)")
+    if (options.verbose) {
+      logger.info("> Downloading remote file(s)")
+    }
 
     // Download remote files.
     copySpec.source.remoteFiles.each { String srcFile ->
@@ -338,10 +424,12 @@ class SessionDelegate {
   }
 
   private void upload(CopyOptionsDelegate copySpec) {
+    if (options.verbose) {
+      logger.info("> Uploading file(s)")
+    }
     def remoteDirs = copySpec.target.remoteDirs
     def remoteFiles = copySpec.target.remoteFiles
     createRemoteFolderStructure(remoteFiles, remoteDirs)
-    // Upload local files and directories.
     def allLocalFiles = copySpec.source.localFiles + copySpec.source.localDirs
     uploadLocalFiles(allLocalFiles, remoteFiles, remoteDirs)
   }
@@ -357,7 +445,9 @@ class SessionDelegate {
   }
 
   private void uploadLocalFiles(def allLocalFiles, def remoteFiles, def remoteDirs) {
-    logger.info("> Uploading local file(s)")
+    if (options.verbose) {
+      logger.info("> Uploading local file(s)")
+    }
     allLocalFiles.each { File sourcePath ->
       if (sourcePath.isDirectory()) {
         sourcePath.eachFileRecurse { File childPath ->
@@ -427,11 +517,11 @@ class SessionDelegate {
     }
   }
 
-  static private String relativePath(File parent, File child) {
+  private static String relativePath(File parent, File child) {
     separatorsToWindows(child.canonicalPath.replace(parent.canonicalPath, '')).replaceAll('^\\\\', '')
   }
 
-  static private String relativePath(String parent, String child) {
+  private static String relativePath(String parent, String child) {
     normalizeNoEndSeparator(child)
             .replace(normalizeNoEndSeparator(parent) + File.separatorChar, '')
             .replace(File.separatorChar.toString(), '\\')

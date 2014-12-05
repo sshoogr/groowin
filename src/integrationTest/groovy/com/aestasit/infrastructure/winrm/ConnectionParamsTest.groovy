@@ -18,8 +18,8 @@ package com.aestasit.infrastructure.winrm
 
 import org.junit.Test
 
-class ConnectionTest extends BaseIntegrationTest {
-  @Test(expected=WinRMException.class)
+class ConnectionParamsTest extends BaseIntegrationTest {
+  @Test(expected = UnknownHostException.class)
   void testFailConnection() {
     engine.options.with {
       defaultHost = 'some_fake_address'
@@ -27,6 +27,21 @@ class ConnectionTest extends BaseIntegrationTest {
 
     engine.remoteManagement {
       exec('type', 'C:\\temp\\fictional.file')
+    }
+  }
+
+  // caused by TimeoutException
+  @Test(expected = WinRMException.class)
+  void testLongOperation() throws Exception {
+    engine.options.with {
+      defaultHost = '192.168.25.25'
+      execOptions.with {
+        maxWait = 5000l
+      }
+    }
+
+    engine.remoteManagement {
+      exec('ping', ['localhost', '-n', '25'] as String[])
     }
   }
 }

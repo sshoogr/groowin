@@ -51,11 +51,11 @@ class WinRMDslEngine {
   }
 
   private executeSession(
-      @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl, Object context,
-      @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure configure) {
+    @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl, Object context,
+    @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure configure) {
     def result = null
     if (cl) {
-      if (delegate == null) {
+      if (!options.reuseConnection || delegate == null) {
         delegate = new SessionDelegate(options)
       }
       if (configure != null) {
@@ -63,9 +63,24 @@ class WinRMDslEngine {
       }
       cl.delegate = delegate
       cl.resolveStrategy = DELEGATE_FIRST
-      result = cl(context)
+
+      try {
+        result = cl(context)
+        if ((!options.reuseConnection) && delegate.sessionOpen) {
+          safeDisconnect()
+        }
+      } catch (Throwable ex) {
+        safeDisconnect()
+        throw ex
+      }
     }
     result
   }
 
+  private void safeDisconnect() {
+    try {
+      delegate.disconnect()
+    } catch (Exception e) {
+    }
+  }
 }

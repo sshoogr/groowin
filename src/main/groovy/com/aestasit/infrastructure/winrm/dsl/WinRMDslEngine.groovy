@@ -63,7 +63,6 @@ class WinRMDslEngine {
       }
       cl.delegate = delegate
       cl.resolveStrategy = DELEGATE_FIRST
-
       try {
         result = cl(context)
         if ((!options.reuseConnection) && delegate.sessionOpen) {

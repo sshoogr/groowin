@@ -210,7 +210,6 @@ class SessionDelegate {
     if (!execOptions?.command) {
       throw new WinRMException("The 'command' parameter is not specified!")
     }
-
     doExec(execOptions.command, new ExecOptions(options.execOptions, execOptions), execOptions?.arguments as String[])
   }
 
@@ -239,8 +238,7 @@ class SessionDelegate {
 
   private CommandOutput doExec(String cmd, ExecOptions options, String[] arguments = []) {
     connect()
-
-    def commandId = null
+    String commandId = null
     catchExceptions(options, commandId) {
       commandId = client.executeCommand(cmd, arguments)
       return getCommandExecutionResults(options, commandId)
@@ -308,6 +306,7 @@ class SessionDelegate {
     new CommandOutput(commandExecOutput.exitStatus,
         commandExecOutput.failed() ? commandExecOutput.errorOutput : commandExecOutput.output,
         commandExecOutput.exception)
+
   }
 
   private void stopExecution(String commandId) {
@@ -315,7 +314,6 @@ class SessionDelegate {
       if (options.verbose) {
         logger.warn("Stopping command execution with id = [$commandId]")
       }
-
       client.cleanupCommand(commandId)
       client.deleteShell()
     } catch (Exception e) {
@@ -331,6 +329,7 @@ class SessionDelegate {
   //  \_____|_|
   //
   ////////////////////////////////////////////////////////////////////////////////////////////////
+
   /**
    * Copies file defined by file path from a local machine to a remote machine represented by file path
    *
@@ -367,7 +366,6 @@ class SessionDelegate {
     cl.delegate = copySpec
     cl.resolveStrategy = DELEGATE_FIRST
     cl()
-
     if (!isCopyTypesDefined(copySpec)) {
       throw new WinRMException("Either copying source (from) or target (into) is of unknown type!")
     }
@@ -490,7 +488,6 @@ class SessionDelegate {
 
   private void doPut(File srcFile, String dst) {
     logger.info("> ${srcFile.canonicalPath} => ${dst}")
-
     try {
       def newInputStream = srcFile.newInputStream()
       def outputStream = remoteFile(dst).outputStream
@@ -504,7 +501,6 @@ class SessionDelegate {
 
   private void doGet(String srcFile, File dstFile) {
     logger.info("> ${srcFile} => ${dstFile.canonicalPath}")
-
     try {
       def newOutputStream = dstFile.newOutputStream()
       def inputStream = remoteFile(srcFile).inputStream

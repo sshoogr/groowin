@@ -14,7 +14,7 @@ The library was jointly developed by **Aestas/IT** (http://aestasit.com) and **N
 
 The easiest way to use `groowin` in a **Groovy** script is by importing the dependency using [Grape](http://groovy.codehaus.org/Grape).
 
-    @Grab('com.aestasit.infrastructure.groowin:groowin:0.1.2')
+    @Grab('com.aestasit.infrastructure.groowin:groowin:0.1.8')
     import static com.aestasit.winrm.DefaultWinRM.*
 
 The entry point for using the **DSL** is the `remoteManagement` method, which accepts a closure with **Groovy** or **DSL** code:

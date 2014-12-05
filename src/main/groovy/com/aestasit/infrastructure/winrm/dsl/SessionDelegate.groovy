@@ -26,13 +26,11 @@ import com.aestasit.infrastructure.winrm.log.Slf4jLogger
 import java.util.concurrent.TimeoutException
 import java.util.regex.Pattern
 
-import static com.aestasit.infrastructure.winrm.dsl.FileSetType.UNKNOWN
-import static groovy.lang.Closure.DELEGATE_FIRST
-
-import static com.aestasit.infrastructure.winrm.client.util.Constants.*
+import static com.aestasit.infrastructure.winrm.client.util.Constants.PORT_HTTP
+import static com.aestasit.infrastructure.winrm.client.util.Constants.PROTOCOL_HTTP
 import static com.aestasit.infrastructure.winrm.dsl.FileSetType.*
+import static groovy.lang.Closure.DELEGATE_FIRST
 import static org.apache.commons.io.FilenameUtils.*
-
 
 /**
  * Closure delegate that is used to collect all WinRM options and give access to other DSL delegates.
@@ -40,6 +38,7 @@ import static org.apache.commons.io.FilenameUtils.*
  * @author Andrey Adamovich
  */
 class SessionDelegate {
+
   private static final Pattern WINRM_URL = ~/^(([^:@]+)(:([^@]+))?@)?([^:]+)(:(\d+))?$/
 
   private String protocol = PROTOCOL_HTTP
@@ -90,7 +89,7 @@ class SessionDelegate {
     password
   }
 
-  void setChanged(changed){
+  void setChanged(changed) {
     this.changed = changed
   }
 
@@ -135,7 +134,7 @@ class SessionDelegate {
   }
 
   void connect() {
-    try  {
+    try {
       if (!client || !sessionOpen || changed) {
         disconnect()
 
@@ -154,7 +153,7 @@ class SessionDelegate {
 
 
   void disconnect() {
-    if(sessionOpen){
+    if (sessionOpen) {
       try {
         client.deleteShell()
       } catch (Exception e) {
@@ -307,13 +306,13 @@ class SessionDelegate {
     }
 
     new CommandOutput(commandExecOutput.exitStatus,
-      commandExecOutput.failed() ? commandExecOutput.errorOutput : commandExecOutput.output,
-      commandExecOutput.exception)
+        commandExecOutput.failed() ? commandExecOutput.errorOutput : commandExecOutput.output,
+        commandExecOutput.exception)
   }
 
   private void stopExecution(String commandId) {
     try {
-      if(options.verbose){
+      if (options.verbose) {
         logger.warn("Stopping command execution with id = [$commandId]")
       }
 
@@ -369,10 +368,10 @@ class SessionDelegate {
     cl.resolveStrategy = DELEGATE_FIRST
     cl()
 
-    if(!isCopyTypesDefined(copySpec)){
+    if (!isCopyTypesDefined(copySpec)) {
       throw new WinRMException("Either copying source (from) or target (into) is of unknown type!")
     }
-    if(!isSourceTargetDifferent(copySpec)){
+    if (!isSourceTargetDifferent(copySpec)) {
       throw new WinRMException("Copying source (from) and target (into) shouldn't be both local or both remote!")
     }
 
@@ -507,11 +506,11 @@ class SessionDelegate {
     logger.info("> ${srcFile} => ${dstFile.canonicalPath}")
 
     try {
-    def newOutputStream = dstFile.newOutputStream()
-    def inputStream = remoteFile(srcFile).inputStream
-    newOutputStream << inputStream
-    newOutputStream.close()
-    inputStream.close()
+      def newOutputStream = dstFile.newOutputStream()
+      def inputStream = remoteFile(srcFile).inputStream
+      newOutputStream << inputStream
+      newOutputStream.close()
+      inputStream.close()
     } catch (IOException e) {
       throw new WinRMException("File [$dstFile.canonicalPath] download failed with a message $e.message")
     }
@@ -523,8 +522,8 @@ class SessionDelegate {
 
   private static String relativePath(String parent, String child) {
     normalizeNoEndSeparator(child)
-            .replace(normalizeNoEndSeparator(parent) + File.separatorChar, '')
-            .replace(File.separatorChar.toString(), '\\')
+        .replace(normalizeNoEndSeparator(parent) + File.separatorChar, '')
+        .replace(File.separatorChar.toString(), '\\')
   }
 
   private void createRemoteDirectory(String dstFile) {

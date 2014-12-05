@@ -51,8 +51,8 @@ class WinRMDslEngine {
   }
 
   private executeSession(
-    @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl, Object context,
-    @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure configure) {
+      @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl, Object context,
+      @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure configure) {
     def result = null
     if (cl) {
       if (!options.reuseConnection || delegate == null) {

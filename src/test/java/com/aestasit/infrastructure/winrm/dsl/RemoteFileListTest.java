@@ -18,7 +18,8 @@ package com.aestasit.infrastructure.winrm.dsl;
 
 import org.junit.Test;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /*
  * This java class is introduced to avoid

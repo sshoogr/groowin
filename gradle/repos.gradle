@@ -1,4 +1,3 @@
-
 apply plugin: 'maven'
 
 repositories {
@@ -15,7 +14,7 @@ if (!project.version.endsWith('-SNAPSHOT')) {
 
 uploadArchives {
   repositories.mavenDeployer {
-    if (project.version.endsWith('-SNAPSHOT')) { 
+    if (project.version.endsWith('-SNAPSHOT')) {
       repository(url: ossSnapshotRepositoryUrl) {
         authentication(userName: ossSnapshotRepositoryUserName, password: ossSnapshotRepositoryPassword)
       }

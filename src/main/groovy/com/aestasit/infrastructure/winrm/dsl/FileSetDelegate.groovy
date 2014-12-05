@@ -18,7 +18,7 @@ package com.aestasit.infrastructure.winrm.dsl
 
 import com.aestasit.infrastructure.winrm.WinRMException
 
-import static FileSetType.*
+import static com.aestasit.infrastructure.winrm.dsl.FileSetType.*
 
 /**
  * Closure delegate that is used to collect data about remote or local file collection.

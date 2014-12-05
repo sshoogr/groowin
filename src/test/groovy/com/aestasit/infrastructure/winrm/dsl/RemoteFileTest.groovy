@@ -36,21 +36,21 @@ class RemoteFileTest {
     new File(filepath).delete()
   }
 
-  @Test(expected=WinRMException.class)
+  @Test(expected = WinRMException.class)
   void testWrongDestinationFilePath() {
     RemoteFile file = new RemoteFile(host, user, password, 'C/temp/new.csv')
     file.initialize()
   }
 
-  @Test(expected=WinRMException.class)
+  @Test(expected = WinRMException.class)
   void testShortDestinationFilePath() {
     RemoteFile file = new RemoteFile(host, user, password, 'C')
     file.initialize()
   }
 
-  @Test(expected=WinRMException.class)
+  @Test(expected = WinRMException.class)
   void testMissedSeparatorAfterColon() {
-    RemoteFile file = new RemoteFile(host, user, password,'C:temp/new.csv')
+    RemoteFile file = new RemoteFile(host, user, password, 'C:temp/new.csv')
     file.initialize()
   }
 }

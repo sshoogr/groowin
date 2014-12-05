@@ -20,56 +20,56 @@ import org.junit.Test
 
 class ExecHttpsTest extends BaseHttpsIntegrationTest {
 
-    @Test
-    void testTypeHostFiles() {
-        engine.remoteManagement {
-            exec('type', 'c:\\Windows\\System32\\drivers\\etc\\hosts')
-            exec(
-                    command: 'type',
-                    arguments: ['d:\\Windows\\System32\\drivers\\etc\\hosts'],
-                    failOnError: false
-            )
-        }
+  @Test
+  void testTypeHostFiles() {
+    engine.remoteManagement {
+      exec('type', 'c:\\Windows\\System32\\drivers\\etc\\hosts')
+      exec(
+          command: 'type',
+          arguments: ['d:\\Windows\\System32\\drivers\\etc\\hosts'],
+          failOnError: false
+      )
     }
+  }
 
-    @Test
-    void testCommandCreateFile() {
-        engine.remoteManagement('vagrant:vagrant@192.168.25.25:5986') {
-            exec('mkdir', 'c:\\tempGroowin')
-            exec('echo.', 'This is a test string in a test file', '>', 'c:\\tempGroowin\\testEcho.file')
-            exec('rmdir', '/S', '/Q', 'c:\\tempGroowin')
-        }
+  @Test
+  void testCommandCreateFile() {
+    engine.remoteManagement('vagrant:vagrant@192.168.25.25:5986') {
+      exec('mkdir', 'c:\\tempGroowin')
+      exec('echo.', 'This is a test string in a test file', '>', 'c:\\tempGroowin\\testEcho.file')
+      exec('rmdir', '/S', '/Q', 'c:\\tempGroowin')
     }
+  }
 
-    @Test
-    void testCommandMap() {
-        engine.remoteManagement {
-            def result = exec(command: 'dir', showOutput: false)
-            result.output.eachLine { line -> println ">>>>> OUTPUT: ${line}" }
-            println ">>>>> EXIT: ${result.exitStatus}"
-        }
+  @Test
+  void testCommandMap() {
+    engine.remoteManagement {
+      def result = exec(command: 'dir', showOutput: false)
+      result.output.eachLine { line -> println ">>>>> OUTPUT: ${line}" }
+      println ">>>>> EXIT: ${result.exitStatus}"
     }
+  }
 
-    @Test
-    void testOk() throws Exception {
-        engine.remoteManagement {
-            assert ok('dir')
-        }
+  @Test
+  void testOk() throws Exception {
+    engine.remoteManagement {
+      assert ok('dir')
     }
+  }
 
-    @Test
-    void testFail() throws Exception {
-        engine.remoteManagement {
-            assert fail('mkdur dur')
-        }
+  @Test
+  void testFail() throws Exception {
+    engine.remoteManagement {
+      assert fail('mkdur dur')
     }
+  }
 
-    @Test
-    void testTimeout() throws Exception {
-        engine.remoteManagement {
-            // TODO Update WinRM client to support Input redirection
+  @Test
+  void testTimeout() throws Exception {
+    engine.remoteManagement {
+      // TODO Update WinRM client to support Input redirection
 //      exec('timeout', '200')
-        }
     }
+  }
 
 }

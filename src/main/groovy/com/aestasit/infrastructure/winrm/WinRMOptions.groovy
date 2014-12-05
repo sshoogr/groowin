@@ -18,7 +18,8 @@ package com.aestasit.infrastructure.winrm
 
 import com.aestasit.infrastructure.winrm.log.Logger
 
-import static com.aestasit.infrastructure.winrm.client.util.Constants.*
+import static com.aestasit.infrastructure.winrm.client.util.Constants.PORT_HTTP
+import static com.aestasit.infrastructure.winrm.client.util.Constants.PROTOCOL_HTTP
 
 /**
  * Configuration object holding options used for DSL configuration.
@@ -41,6 +42,7 @@ class WinRMOptions extends CommonOptions {
 
   // Exec options.
   ExecOptions execOptions = new ExecOptions()
+
   def execOptions(Closure cl) {
     cl.delegate = execOptions
     cl.resolveStrategy = Closure.DELEGATE_FIRST
@@ -49,6 +51,7 @@ class WinRMOptions extends CommonOptions {
 
   // CIFS copy options.
   CopyOptions copyOptions = new CopyOptions()
+
   def copyOptions(Closure cl) {
     cl.delegate = copyOptions
     cl.resolveStrategy = Closure.DELEGATE_FIRST

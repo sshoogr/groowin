@@ -32,9 +32,9 @@ class ExecOptions extends CommonOptions {
 
   ExecOptions(ExecOptions opt1) {
     this.failOnError = setValue(opt1?.failOnError, true)
-    this.showOutput  = setValue(opt1?.showOutput, true)
+    this.showOutput = setValue(opt1?.showOutput, true)
     this.showCommand = setValue(opt1?.showCommand, true)
-    this.maxWait     = setValue(opt1?.maxWait, 0)
+    this.maxWait = setValue(opt1?.maxWait, 0)
   }
 
   ExecOptions(ExecOptions opt1, ExecOptions opt2) {
@@ -43,8 +43,8 @@ class ExecOptions extends CommonOptions {
 
   ExecOptions(ExecOptions opt1, Map opt2) {
     this.failOnError = setValue(opt2?.failOnError, opt1?.failOnError, true)
-    this.showOutput  = setValue(opt2?.showOutput, opt1?.showOutput, true)
+    this.showOutput = setValue(opt2?.showOutput, opt1?.showOutput, true)
     this.showCommand = setValue(opt2?.showCommand, opt1?.showCommand, true)
-    this.maxWait     = setValue(opt2?.maxWait, opt1?.maxWait, 0)
+    this.maxWait = setValue(opt2?.maxWait, opt1?.maxWait, 0)
   }
 }

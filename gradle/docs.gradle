@@ -1,4 +1,3 @@
-
 task groovydocJar(type: Jar, dependsOn: groovydoc) {
   classifier = 'javadoc'
   from 'build/docs/groovydoc'
@@ -15,7 +14,7 @@ artifacts {
   archives sourcesJar
 }
 
-githubPages {                                        
+githubPages {
   repoUri = "https://github.com/aestasit/${githubProjectName}.git"
   pages {
     from(groovydoc.outputs.files) {

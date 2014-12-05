@@ -17,7 +17,9 @@
 package com.aestasit.infrastructure.winrm
 
 import org.junit.Test
-import static org.junit.Assert.*
+
+import static org.junit.Assert.assertTrue
+import static org.junit.Assert.fail
 
 class ExecTest extends BaseIntegrationTest {
   @Test
@@ -25,9 +27,9 @@ class ExecTest extends BaseIntegrationTest {
     engine.remoteManagement {
       exec('type', 'c:\\Windows\\System32\\drivers\\etc\\hosts')
       exec(
-        command: 'type',
-        arguments: [ 'd:\\Windows\\System32\\drivers\\etc\\hosts' ],
-        failOnError: false
+          command: 'type',
+          arguments: ['d:\\Windows\\System32\\drivers\\etc\\hosts'],
+          failOnError: false
       )
     }
   }
@@ -37,7 +39,7 @@ class ExecTest extends BaseIntegrationTest {
     engine.remoteManagement('vagrant:vagrant@192.168.25.25:5985') {
       exec('mkdir', 'c:\\tempGroowin')
       exec('echo.', 'This is a test string in a test file', '>', 'c:\\tempGroowin\\testEcho.file')
-      exec('rmdir', '/S','/Q','c:\\tempGroowin')
+      exec('rmdir', '/S', '/Q', 'c:\\tempGroowin')
     }
   }
 

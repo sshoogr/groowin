@@ -18,7 +18,8 @@ package com.aestasit.infrastructure.winrm.dsl;
 
 /**
  * File type depending on the placement - on the local or remote machine
- * <p>
+ * <p/>
+ *
  * @author Andrey Adamovich
  */
 public enum FileSetType {

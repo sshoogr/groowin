@@ -23,21 +23,21 @@ import org.junit.BeforeClass
 
 class BaseHttpsIntegrationTest {
 
-    static WinRMOptions options
-    static WinRMDslEngine engine
+  static WinRMOptions options
+  static WinRMDslEngine engine
 
-    @BeforeClass
-    def static void defineOptions() {
-        options = new WinRMOptions()
-        options.with {
-            logger = new SysOutLogger()
-            defaultHost = '192.168.25.25'
-            defaultUser = 'vagrant'
-            defaultPassword = 'vagrant'
-            defaultPort = 5986
-            defaultProtocol = 'https'
-            verbose = true
-        }
-        engine = new WinRMDslEngine(options)
+  @BeforeClass
+  def static void defineOptions() {
+    options = new WinRMOptions()
+    options.with {
+      logger = new SysOutLogger()
+      defaultHost = '192.168.25.25'
+      defaultUser = 'vagrant'
+      defaultPassword = 'vagrant'
+      defaultPort = 5986
+      defaultProtocol = 'https'
+      verbose = true
     }
+    engine = new WinRMDslEngine(options)
+  }
 }

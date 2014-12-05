@@ -61,6 +61,7 @@ class RemoteFile {
     * For example, [C:\temp\test.txt] file on remote host[TestMachine] will be converted to
     * [smb://TestMachine/C$/temp/test.txt]
     */
+
   private String convertToSmbFileFormat() {
     "smb://${host}/${destinationFilepath[0]}\$/${destinationFilepath.substring(3)}"
   }
@@ -98,27 +99,27 @@ class RemoteFile {
     remoteFile.length()
   }
 
-  boolean isDirectory(){
+  boolean isDirectory() {
     remoteFile.isDirectory()
   }
 
-  boolean exists(){
+  boolean exists() {
     remoteFile.exists()
   }
 
-  void mkdir(){
+  void mkdir() {
     remoteFile.mkdir()
   }
 
-  void delete(){
+  void delete() {
     remoteFile.delete()
   }
 
-  OutputStream getOutputStream(){
+  OutputStream getOutputStream() {
     remoteFile.outputStream
   }
 
-  InputStream getInputStream(){
+  InputStream getInputStream() {
     remoteFile.inputStream
   }
 

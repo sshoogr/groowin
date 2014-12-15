@@ -278,11 +278,19 @@ class SessionDelegate {
 
   private CommandOutput getCommandExecutionResults(ExecOptions options, String commandId) {
 
-    def commandExecOutput = null
+    def commandExecOutput = new com.aestasit.infrastructure.winrm.client.CommandOutput(-1,'','')
     Thread thread = new Thread() {
       void run() {
         for (; !isInterrupted();) {
-          commandExecOutput = client.commandExecuteResults(commandId)
+          def currentOutput = client.commandExecuteResults(commandId)
+
+          commandExecOutput.with{
+            exitStatus = currentOutput.exitStatus
+            output += currentOutput.output
+            errorOutput = currentOutput.errorOutput
+            exception = currentOutput.exception
+          }
+
           if (!commandExecOutput.commandRunning) {
             break
           }
@@ -303,9 +311,13 @@ class SessionDelegate {
       throw new TimeoutException()
     }
 
-    new CommandOutput(commandExecOutput.exitStatus,
-        commandExecOutput.failed() ? commandExecOutput.errorOutput : commandExecOutput.output,
-        commandExecOutput.exception)
+    def outputStr = commandExecOutput.failed() ? commandExecOutput.errorOutput : commandExecOutput.output
+    if (options.showOutput) {
+      println outputStr
+    }
+    logger.info(outputStr)
+
+    new CommandOutput(commandExecOutput.exitStatus, outputStr, commandExecOutput.exception)
 
   }
 

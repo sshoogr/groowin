@@ -19,7 +19,6 @@ package com.aestasit.infrastructure.winrm
 import org.junit.Test
 
 import static org.junit.Assert.assertTrue
-import static org.junit.Assert.fail
 
 class ExecTest extends BaseIntegrationTest {
   @Test
@@ -68,10 +67,7 @@ class ExecTest extends BaseIntegrationTest {
   @Test
   void testTimeout() throws Exception {
     engine.remoteManagement {
-      def output = exec('timeout', '15')
-
-      println output.exitStatus
-      println output.output
+      exec('timeout', '15')
     }
   }
 }

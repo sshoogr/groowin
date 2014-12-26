@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
  *
  */
 public class RemoteFileListTest {
+
   RemoteFile mockRemoteFolder() {
     RemoteFile mockedFile = mock(RemoteFile.class);
     when(mockedFile.exists()).thenReturn(true);
@@ -35,7 +36,6 @@ public class RemoteFileListTest {
     RemoteFile file1 = mock(RemoteFile.class);
     RemoteFile file2 = mock(RemoteFile.class);
     when(mockedFile.listFiles()).thenReturn(new RemoteFile[]{file1, file2});
-
     return mockedFile;
   }
 
@@ -47,4 +47,5 @@ public class RemoteFileListTest {
     RemoteFile[] files = file.listFiles();
     assert files.length == 2;
   }
+
 }

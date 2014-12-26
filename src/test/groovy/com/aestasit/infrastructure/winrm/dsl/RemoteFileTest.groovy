@@ -17,15 +17,19 @@
 package com.aestasit.infrastructure.winrm.dsl
 
 import com.aestasit.infrastructure.winrm.WinRMException
+import org.junit.Ignore
 import org.junit.Test
 
 class RemoteFileTest {
+
   String host = 'localhost'
   String user = 'user'
   String password = 'secret1234'
 
-//  @Test
+  @Test
+  @Ignore
   void testLocalFileCreation() {
+    // TODO: why is this failing?
     def filepath = 'C:/temp/new.csv'
     RemoteFile file = new RemoteFile(host, user, password, filepath)
     file.initialize()
@@ -53,4 +57,5 @@ class RemoteFileTest {
     RemoteFile file = new RemoteFile(host, user, password, 'C:temp/new.csv')
     file.initialize()
   }
+
 }

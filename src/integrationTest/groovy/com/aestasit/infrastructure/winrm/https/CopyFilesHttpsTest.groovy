@@ -35,7 +35,7 @@ class CopyFilesHttpsTest extends BaseHttpsIntegrationTest {
     engine.remoteManagement {
       cp {
         from { remoteFile 'c:\\Windows\\System32\\drivers\\etc\\hosts' }
-        into { localFile 'temporary\\234' }
+        into { localFile 'temporary/234' }
       }
     }
 

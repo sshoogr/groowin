@@ -19,7 +19,10 @@ package com.aestasit.infrastructure.winrm
 import org.junit.Test
 
 class ConnectionParamsTest extends BaseIntegrationTest {
-  @Test(expected = UnknownHostException.class)
+
+  // under Windows UnknownHostException
+  // under Linux   HttpHostConnectException
+  @Test(expected = Exception.class)
   void testFailConnection() {
     engine.options.with {
       defaultHost = 'some_fake_address'

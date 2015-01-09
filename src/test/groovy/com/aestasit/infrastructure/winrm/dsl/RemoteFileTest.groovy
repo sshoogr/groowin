@@ -17,7 +17,6 @@
 package com.aestasit.infrastructure.winrm.dsl
 
 import com.aestasit.infrastructure.winrm.WinRMException
-import org.junit.Ignore
 import org.junit.Test
 
 class RemoteFileTest {
@@ -25,20 +24,6 @@ class RemoteFileTest {
   String host = 'localhost'
   String user = 'user'
   String password = 'secret1234'
-
-  @Test
-  @Ignore
-  void testLocalFileCreation() {
-    // TODO: why is this failing?
-    def filepath = 'C:/temp/new.csv'
-    RemoteFile file = new RemoteFile(host, user, password, filepath)
-    file.initialize()
-    file.saveEmpty()
-    assert file.canRead()
-    file.text = 'Site,Today,Week Before,Month Before\naestasit,4,33,171\ngroovy,0,5,28\naetomation,0,4,41'
-    file.text.split(",").contains('aetomation')
-    new File(filepath).delete()
-  }
 
   @Test(expected = WinRMException.class)
   void testWrongDestinationFilePath() {

@@ -31,13 +31,14 @@ class RemoteFileTest extends BaseIntegrationTest {
   void testRemoteFileSetContent() throws Exception {
     engine.remoteManagement {
       String filename = 'c:\\temp\\empty.groovy'
-      remoteFile(filename).saveEmpty()
-      assert remoteFile(filename).canWrite()
-      remoteFile(filename).text = 'Hello World'
-      assert remoteFile(filename).canRead()
-      assert !remoteFile(filename).isHidden()
-      assert remoteFile(filename).length() < 1000l
-      println new Date(remoteFile(filename).lastModified())
+      def remoteFile = remoteFile(filename)
+      remoteFile.saveEmpty()
+      assert remoteFile.canWrite()
+      remoteFile.text = 'Hello World'
+      assert remoteFile.canRead()
+      assert !remoteFile.isHidden()
+      assert remoteFile.length() < 1000l
+      println new Date(remoteFile.lastModified())
       exec('del', filename)
     }
   }

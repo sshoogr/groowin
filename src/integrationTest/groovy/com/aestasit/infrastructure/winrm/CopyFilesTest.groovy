@@ -25,9 +25,12 @@ class CopyFilesTest extends BaseIntegrationTest {
     engine.remoteManagement {
       cp {
         from { remoteDir 'c:\\Windows\\System32\\drivers\\etc\\' }
-        into { localDir 'C:\\temporary' }
+        into { localDir 'temporary' }
       }
     }
+
+    def newFolder = new File('temporary')
+    newFolder.deleteDir()
   }
 
   @Test
@@ -35,21 +38,36 @@ class CopyFilesTest extends BaseIntegrationTest {
     engine.remoteManagement {
       cp {
         from { remoteFile 'c:\\Windows\\System32\\drivers\\etc\\hosts' }
-        into { localFile 'C:\\temporary\\234' }
+        into { localFile 'temporary\\234' }
       }
     }
+
+    def newFolder = new File('temporary')
+    newFolder.deleteDir()
   }
 
   @Test
   void testCopyLocalDir() {
+    String folderToCreate = "folder_${System.currentTimeMillis()}"
+    def newFolder = new File(folderToCreate)
+    newFolder.mkdir()
+    def temp = new File(newFolder, "file1.txt")
+    temp.createNewFile()
+    temp = new File(newFolder, "file2.txt")
+    temp.createNewFile()
+    temp.text = "Ping"
+
+
     engine.remoteManagement {
       cp {
-        from { localDir 'c:\\Windows\\System32\\drivers\\etc\\' }
+        from { localDir folderToCreate }
         into { remoteDir 'C:\\temporary' }
       }
 
       exec('rmdir', '/s', '/q', 'C:\\temporary')
     }
+
+    newFolder.deleteDir()
   }
 
   @Test

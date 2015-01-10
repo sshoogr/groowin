@@ -25,9 +25,12 @@ class CopyFilesHttpsTest extends BaseHttpsIntegrationTest {
     engine.remoteManagement {
       cp {
         from { remoteDir 'c:\\Windows\\System32\\drivers\\etc\\' }
-        into { localDir 'C:\\temporary' }
+        into { localDir 'temporary' }
       }
     }
+
+    def newFolder = new File('temporary')
+    newFolder.deleteDir()
   }
 
   @Test

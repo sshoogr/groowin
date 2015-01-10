@@ -33,7 +33,18 @@ The entry point for using the **DSL** is the `remoteManagement` method, which ac
 For more use cases, please refer to the following sections or to the `examples` folder in this repository.
 
 
+### Working with files in `groowin`
+
+For processing remote files `groowin` uses [jCIFS](http://jcifs.samba.org/) library.
+jCIFS implements the CIFS/SMB networking protocol. To connect to a remote host using the CIFS protocol, ensure the host is reachable on port 445.
+Ensure that the user that you will use to connect to the WinRM host has access to shares that correspond to the directory you want to access.
+
 ### Running `groowin` integration tests
 
 Project's integration tests can be found in the `./src/integrationTest/` folder.
-To install properly test environment for running project's integration tests please refer to the documentation of the [groowin-test-box](https://github.com/aestasit/groowin-test-box) project.
+To run the integration tests:
+
+1. Create base box using [groowin-test-box](https://github.com/aestasit/groowin-test-box) project. After finishing you will have `windows_2008_r2_virtualbox.box`
+2. Add 'aestasit/2008r2' box using the command `vagrant box add --name aestasit/2008r2 windows_2008_r2_virtualbox.box`
+3. Execute `vagrant up` using the `./Vagrantfile` file
+4. execute `gradle integration` command to run integration tests

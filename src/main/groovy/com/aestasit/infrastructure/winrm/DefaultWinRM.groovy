@@ -41,12 +41,19 @@ class DefaultWinRM {
         showOutput = true
         showCommand = true
       }
-
     }
   }
 
   static remoteManagement(@DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl) {
     new WinRMDslEngine(options).remoteManagement(cl)
+  }
+
+  static remoteManagement(String url, @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl) {
+    new WinRMDslEngine(options).remoteManagement(url, cl)
+  }
+
+  static remoteManagement(String url, Map context, @DelegatesTo(strategy = DELEGATE_FIRST, value = SessionDelegate) Closure cl) {
+    new WinRMDslEngine(options).remoteManagement(url, context, cl)
   }
 
   static execOptions(@DelegatesTo(strategy = DELEGATE_FIRST, value = ExecOptions) Closure cl) {

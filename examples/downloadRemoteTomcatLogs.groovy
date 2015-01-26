@@ -1,3 +1,9 @@
+/*
+ * This script connects to remote server on which Tomcat server is running.
+ * The scripts installs 7-zip archiver into 'C:\\Program Files\\7-zip' folder, archives Tomcat logs
+ * and downloads created archive locally.
+ */
+
 @Grab('com.aestasit.infrastructure.groowin:groowin:0.1.11-SNAPSHOT')
 
 import static com.aestasit.infrastructure.winrm.DefaultWinRM.*

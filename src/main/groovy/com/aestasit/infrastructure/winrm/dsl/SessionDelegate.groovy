@@ -26,8 +26,7 @@ import com.aestasit.infrastructure.winrm.log.Slf4jLogger
 import java.util.concurrent.TimeoutException
 import java.util.regex.Pattern
 
-import static com.aestasit.infrastructure.winrm.client.util.Constants.PORT_HTTP
-import static com.aestasit.infrastructure.winrm.client.util.Constants.PROTOCOL_HTTP
+import static com.aestasit.infrastructure.winrm.client.util.Constants.*
 import static com.aestasit.infrastructure.winrm.dsl.FileSetType.*
 import static groovy.lang.Closure.DELEGATE_FIRST
 import static org.apache.commons.io.FilenameUtils.*
@@ -36,6 +35,7 @@ import static org.apache.commons.io.FilenameUtils.*
  * Closure delegate that is used to collect all WinRM options and give access to other DSL delegates.
  *
  * @author Andrey Adamovich
+ * @author Sergey Korenko
  */
 class SessionDelegate {
 
@@ -122,6 +122,7 @@ class SessionDelegate {
       } else {
         setPort(PORT_HTTP)
       }
+      protocol = PORT_HTTP == port ? PROTOCOL_HTTP : PROTOCOL_HTTPS
       setUser(matcher.group(2))
       setPassword(matcher.group(4))
     } else {

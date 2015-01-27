@@ -16,8 +16,50 @@
 
 package com.aestasit.infrastructure.winrm.dsl
 
-class SessionDelegateTest extends GroovyTestCase {
-  void testSetUrl() {
+import com.aestasit.infrastructure.winrm.WinRMOptions
+import com.aestasit.infrastructure.winrm.log.SysOutLogger
+import org.junit.BeforeClass
+import org.junit.Test
 
+import static org.junit.Assert.*
+import static com.aestasit.infrastructure.winrm.client.util.Constants.*
+
+class SessionDelegateTest {
+
+  static WinRMOptions options
+  static SessionDelegate sessionDelegate
+
+  @BeforeClass
+  static void init(){
+    options = new WinRMOptions()
+    options.with {
+      logger = new SysOutLogger()
+      verbose = true
+      execOptions.with {
+        showOutput = true
+        showCommand = true
+      }
+    }
+    sessionDelegate = new SessionDelegate(options)
+  }
+
+  @Test
+  void testSetUrlHTTP() {
+    sessionDelegate.url = 'vagrant:vagrant@winrmhost:5985'
+
+    assertEquals( PROTOCOL_HTTP, sessionDelegate.protocol)
+    assertEquals( 'winrmhost', sessionDelegate.host)
+    assertEquals( 'vagrant', sessionDelegate.username)
+    assertEquals( 5985, sessionDelegate.port)
+  }
+
+  @Test
+  void testSetUrlHTTPS() {
+    sessionDelegate.url = 'vagrant:vagrant@winrmhost:5986'
+
+    assertEquals( PROTOCOL_HTTPS, sessionDelegate.protocol)
+    assertEquals( 'winrmhost', sessionDelegate.host)
+    assertEquals( 'vagrant', sessionDelegate.username)
+    assertEquals( 5986, sessionDelegate.port)
   }
 }

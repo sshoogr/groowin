@@ -9,9 +9,9 @@
 
 import static com.aestasit.infrastructure.winrm.DefaultWinRM.*
 
-def user = 'vagrant'
-def pwd = 'vagrant'
-def host = '192.168.25.25'
+def user = 'user'
+def pwd = 'password'
+def host = 'server.windows2008r2'
 def port = '5985'
 
 def mySqlUser = 'root'

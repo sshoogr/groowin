@@ -16,21 +16,8 @@
 
 package com.aestasit.infrastructure.winrm.dsl
 
-import com.aestasit.infrastructure.winrm.ExecOptions
-import groovy.transform.InheritConstructors
+class SessionDelegateTest extends GroovyTestCase {
+  void testSetUrl() {
 
-/**
- * Closure delegate that is used to collect all EXEC (remote command execution) options including command itself.
- *
- * @author Andrey Adamovich
- *
- */
-@InheritConstructors
-class ExecOptionsDelegate extends ExecOptions {
-
-  String command
-
-  def getExecOptions() {
-    this
   }
 }

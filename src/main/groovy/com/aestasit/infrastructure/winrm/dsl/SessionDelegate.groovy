@@ -16,6 +16,7 @@
 
 package com.aestasit.infrastructure.winrm.dsl
 
+import com.aestasit.infrastructure.winrm.CopyOptions
 import com.aestasit.infrastructure.winrm.ExecOptions
 import com.aestasit.infrastructure.winrm.WinRMException
 import com.aestasit.infrastructure.winrm.WinRMOptions
@@ -23,6 +24,9 @@ import com.aestasit.infrastructure.winrm.client.WinRMClient
 import com.aestasit.infrastructure.winrm.log.Logger
 import com.aestasit.infrastructure.winrm.log.Slf4jLogger
 
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.regex.Pattern
 
@@ -406,15 +410,17 @@ class SessionDelegate {
       logger.info("> Downloading remote file(s)")
     }
 
+    def copyOptions = new CopyOptions(options.copyOptions, copySpec)
+
     // Download remote files.
     copySpec.source.remoteFiles.each { String srcFile ->
       copySpec.target.localDirs.each { File dstDir ->
         dstDir.mkdirs()
-        doGet(srcFile, new File(dstDir.canonicalPath, getName(srcFile)))
+        doGet(srcFile, new File(dstDir.canonicalPath, getName(srcFile)), copyOptions)
       }
       copySpec.target.localFiles.each { File dstFile ->
         dstFile.parentFile.mkdirs()
-        doGet(srcFile, dstFile)
+        doGet(srcFile, dstFile, copyOptions)
       }
     }
 
@@ -424,7 +430,7 @@ class SessionDelegate {
         copySpec.target.localDirs.each { File dstDir ->
           def dstFile = new File(dstDir.canonicalPath, relativePath(srcDir, srcFile))
           dstFile.parentFile.mkdirs()
-          doGet(srcFile, new File(dstDir.canonicalPath, relativePath(srcDir, srcFile)))
+          doGet(srcFile, new File(dstDir.canonicalPath, relativePath(srcDir, srcFile)), copyOptions)
         }
       }
       copySpec.target.localFiles.each { File dstFile ->
@@ -437,11 +443,13 @@ class SessionDelegate {
     if (options.verbose) {
       logger.info("> Uploading file(s)")
     }
+
     def remoteDirs = copySpec.target.remoteDirs
     def remoteFiles = copySpec.target.remoteFiles
     createRemoteFolderStructure(remoteFiles, remoteDirs)
     def allLocalFiles = copySpec.source.localFiles + copySpec.source.localDirs
-    uploadLocalFiles(allLocalFiles, remoteFiles, remoteDirs)
+    def copyOptions = new CopyOptions(options.copyOptions, copySpec)
+    uploadLocalFiles(allLocalFiles, remoteFiles, remoteDirs, copyOptions)
   }
 
   private void createRemoteFolderStructure(def remoteFiles, def remoteDirs) {
@@ -454,7 +462,7 @@ class SessionDelegate {
     }
   }
 
-  private void uploadLocalFiles(def allLocalFiles, def remoteFiles, def remoteDirs) {
+  private void uploadLocalFiles(Collection<File> allLocalFiles, List<String> remoteFiles, List<String> remoteDirs, CopyOptions copyOptions) {
     if (options.verbose) {
       logger.info("> Uploading local file(s)")
     }
@@ -468,24 +476,26 @@ class SessionDelegate {
               createRemoteDirectory(dstParentDir)
             } else {
               def dstPath = separatorsToWindows(concat(dstDir, relativePath))
-              doPut(childPath.canonicalFile, dstPath)
+              doPut(childPath.canonicalFile, dstPath, copyOptions)
             }
           }
         }
       } else {
         remoteDirs.each { String dstDir ->
           def dstPath = separatorsToWindows(concat(dstDir, sourcePath.name))
-          doPut(sourcePath, dstPath)
+          doPut(sourcePath, dstPath, copyOptions)
         }
         remoteFiles.each { String dstFile ->
-          doPut(sourcePath, dstFile)
+          doPut(sourcePath, dstFile, copyOptions)
         }
       }
     }
   }
 
   private void remoteEachFileRecurse(String remoteDir, Closure cl) {
-    logger.info("> Getting file list from ${remoteDir} directory")
+    if (options.verbose) {
+      logger.info("> Getting file list from ${remoteDir} directory")
+    }
     List<RemoteFile> entries = remoteFile(separatorsToWindows(remoteDir)).listFiles()
     entries.each { RemoteFile file ->
       def childPath = separatorsToWindows(concat(remoteDir, file.name))
@@ -499,27 +509,32 @@ class SessionDelegate {
     }
   }
 
-  private void doPut(File srcFile, String dst) {
-    logger.info("> ${srcFile.canonicalPath} => ${dst}")
+  private void doPut(File srcFile, String dst, CopyOptions copyOptions) {
+    if (options.verbose) {
+      logger.info("> ${srcFile.canonicalPath} => ${dst}")
+    }
     try {
       def newInputStream = srcFile.newInputStream()
-      def outputStream = remoteFile(dst).outputStream
-      outputStream << newInputStream
-      outputStream.close()
+      def remoteFile = remoteFile(dst)
+      copyStreams(remoteFile.outputStream, newInputStream, srcFile.length(), copyOptions.showProgress)
+      remoteFile.outputStream.close()
       newInputStream.close()
     } catch (IOException e) {
+
       throw new WinRMException("File [$srcFile.canonicalPath] upload failed with a message $e.message")
     }
   }
 
-  private void doGet(String srcFile, File dstFile) {
-    logger.info("> ${srcFile} => ${dstFile.canonicalPath}")
+  private void doGet(String srcFile, File dstFile, CopyOptions copyOptions) {
+    if (options.verbose) {
+      logger.info("> ${srcFile} => ${dstFile.canonicalPath}")
+    }
     try {
       def newOutputStream = dstFile.newOutputStream()
-      def inputStream = remoteFile(srcFile).inputStream
-      newOutputStream << inputStream
+      def remoteFile = remoteFile(srcFile)
+      copyStreams(newOutputStream, remoteFile.inputStream, remoteFile.length(), copyOptions.showProgress)
       newOutputStream.close()
-      inputStream.close()
+      remoteFile.inputStream.close()
     } catch (IOException e) {
       throw new WinRMException("File [$dstFile.canonicalPath] download failed with a message $e.message")
     }
@@ -537,13 +552,68 @@ class SessionDelegate {
 
   private void createRemoteDirectory(String dstFile) {
     if (options.verbose) {
-      logger.debug("> Check if $dstFile exists")
+      logger.info("> Check if $dstFile exists")
     }
     def file = remoteFile(dstFile)
     boolean dirExists = file.exists()
     if (!dirExists) {
-      logger.debug("Creating remote directory: $dstFile")
+      if (options.verbose) {
+        logger.info("Creating remote directory: $dstFile")
+      }
       exec('mkdir', dstFile)
     }
   }
+
+  void copyStreams(OutputStream self, InputStream ins, long size, boolean showProgress) throws IOException {
+    ScheduledFuture task = null
+    try {
+      StreamsCopyingProgressTracker copier = new StreamsCopyingProgressTracker(size, logger)
+      if (showProgress) {
+        def executor = Executors.newScheduledThreadPool(1)
+        task = executor.scheduleAtFixedRate(copier, 0, 1, TimeUnit.SECONDS)
+      }
+      copier.copyStreams(self, ins)
+    } finally {
+      task.cancel(true)
+    }
+  }
+
+  class StreamsCopyingProgressTracker implements Runnable {
+    static int BUFFER_SIZE = 1024
+    long iteration = 1
+    long length = 0
+    Logger logger
+    long previousRate = 0
+
+    StreamsCopyingProgressTracker(long length, Logger logger) {
+      this.length = length
+      this.logger = logger
+    }
+
+    void copyStreams(OutputStream self, InputStream ins) {
+      byte[] buf = new byte[BUFFER_SIZE]
+      while (true) {
+        int count = ins.read(buf, 0, buf.length)
+        if (count == -1) break
+        if (count == 0) {
+          Thread.yield()
+          continue
+        }
+        self.write(buf, 0, count)
+        iteration++
+      }
+      self.flush()
+
+      logger.info "Copying finished."
+    }
+
+    @Override
+    void run() {
+      if (iteration * 1024 < length && previousRate != (long) (iteration * 1024 * 100 / length)) {
+        previousRate = iteration * 1024 * 100 / length
+        logger.info "${previousRate}% copied..."
+      }
+    }
+  }
 }
+

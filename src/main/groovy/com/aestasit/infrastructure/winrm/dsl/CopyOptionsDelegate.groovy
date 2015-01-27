@@ -17,6 +17,7 @@
 package com.aestasit.infrastructure.winrm.dsl
 
 import com.aestasit.infrastructure.winrm.CommonOptions
+import com.aestasit.infrastructure.winrm.CopyOptions
 
 import static groovy.lang.Closure.DELEGATE_FIRST
 
@@ -27,7 +28,7 @@ import static groovy.lang.Closure.DELEGATE_FIRST
  * @author Andrey Adamovich
  *
  */
-class CopyOptionsDelegate extends CommonOptions {
+class CopyOptionsDelegate extends CopyOptions {
 
   private final FileSetDelegate source = new FileSetDelegate()
   private final FileSetDelegate target = new FileSetDelegate()

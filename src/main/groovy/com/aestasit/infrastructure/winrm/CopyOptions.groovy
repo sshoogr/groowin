@@ -23,12 +23,14 @@ package com.aestasit.infrastructure.winrm
  *
  */
 class CopyOptions extends CommonOptions {
+  boolean showProgress = true
 
   CopyOptions() {
   }
 
   CopyOptions(CopyOptions opt1) {
-    this.failOnError = setValue(opt1?.failOnError, true)
+    this.failOnError  = setValue(opt1?.failOnError, true)
+    this.showProgress = setValue(opt1?.showProgress, true)
   }
 
   CopyOptions(CopyOptions opt1, CopyOptions opt2) {
@@ -36,7 +38,7 @@ class CopyOptions extends CommonOptions {
   }
 
   CopyOptions(CopyOptions opt1, Map opt2) {
-    this.failOnError = setValue(opt2?.failOnError, opt1?.failOnError, true)
+    this.failOnError   = setValue(opt2?.failOnError, opt1?.failOnError, true)
+    this.showProgress  = setValue(opt2?.showProgress, opt1?.showProgress, true)
   }
-
 }

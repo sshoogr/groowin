@@ -62,4 +62,14 @@ class SessionDelegateTest {
     assertEquals( 'vagrant', sessionDelegate.username)
     assertEquals( 5986, sessionDelegate.port)
   }
+
+  @Test
+  void testStreamsCopying(){
+    def file1 = new File('bigSourceFile.txt')
+    for(int i = 0; i < 9999;i++){
+      file1 <<"12345678910wedfrtgyhujikol;p[asdfghjkl;'zxcvbnm,.12345678910wedfrtgyhujikol;p[asdfghjkl;'zxcvbnm,.12345678910wedfrtgyhujikol;p[asdfghjkl;'zxcvbnm,.12345678910wedfrtgyhujikol;p[asdfghjkl;'zxcvbnm,."
+    }
+    def file2 = new File('destinationFile.txt')
+    sessionDelegate.copyStreams(file2.newOutputStream(), file1.newInputStream(), file1.length(), true)
+  }
 }

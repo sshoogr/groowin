@@ -71,5 +71,19 @@ class SessionDelegateTest {
     }
     def file2 = new File('destinationFile.txt')
     sessionDelegate.copyStreams(file2.newOutputStream(), file1.newInputStream(), file1.length(), true)
+
+    assertEquals(file1.length(), file2.length())
+  }
+
+  @Test
+  void testStreamsCopyingWithoutProgress(){
+    def file1 = new File('bigSourceFile.txt')
+    for(int i = 0; i < 9999;i++){
+      file1 <<"12345678910wedfrtgyhujikol;p[asdfghjkl;'zxcvbnm,.12345678910wedfrtgyhujikol;p[asdfghjkl;'zxcvbnm,.12345678910wedfrtgyhujikol;p[asdfghjkl;'zxcvbnm,.12345678910wedfrtgyhujikol;p[asdfghjkl;'zxcvbnm,."
+    }
+    def file2 = new File('destinationFile.txt')
+    sessionDelegate.copyStreams(file2.newOutputStream(), file1.newInputStream(), file1.length(), false)
+
+    assertEquals(file1.length(), file2.length())
   }
 }

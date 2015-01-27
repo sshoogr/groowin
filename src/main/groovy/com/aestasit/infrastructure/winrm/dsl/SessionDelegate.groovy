@@ -574,13 +574,13 @@ class SessionDelegate {
       }
       copier.copyStreams(self, ins)
     } finally {
-      task.cancel(true)
+      task?.cancel(true)
     }
   }
 
   class StreamsCopyingProgressTracker implements Runnable {
     static int BUFFER_SIZE = 1024
-    long iteration = 1
+    long iteration = 0
     long length = 0
     Logger logger
     long previousRate = 0

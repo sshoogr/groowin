@@ -17,6 +17,7 @@
 package com.aestasit.infrastructure.winrm.dsl
 
 import com.aestasit.infrastructure.winrm.WinRMOptions
+import com.aestasit.infrastructure.winrm.log.Logger
 import com.aestasit.infrastructure.winrm.log.SysOutLogger
 import org.junit.BeforeClass
 import org.junit.Test
@@ -85,5 +86,36 @@ class SessionDelegateTest {
     sessionDelegate.copyStreams(file2.newOutputStream(), file1.newInputStream(), file1.length(), false)
 
     assertEquals(file1.length(), file2.length())
+  }
+
+  @Test
+  void testLogCommand(){
+    sessionDelegate.logger = new Logger(){
+      String infoToLog
+      String warnToLog
+      String debugToLog
+      @Override
+      void info(String message) {
+        infoToLog = message
+      }
+
+      @Override
+      void warn(String message) {
+        warnToLog = message
+      }
+
+      @Override
+      void debug(String message) {
+        debugToLog = message
+      }
+    }
+
+    sessionDelegate.logCommand('rmdir', '/S', '/Q', 'c:\\tempGroowin')
+    assertEquals( 'rmdir /S /Q c:\\tempGroowin', sessionDelegate.logger.infoToLog)
+
+    sessionDelegate.logCommand('rmdir', '/S', '/Q', '"c:\\Program Files\\tempGroowin"')
+    assertEquals( 'rmdir /S /Q "c:\\Program Files\\tempGroowin"', sessionDelegate.logger.infoToLog)
+
+    sessionDelegate.logger = new SysOutLogger()
   }
 }

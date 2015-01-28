@@ -33,7 +33,7 @@ dependencies {
 
   testCompile "junit:junit:${junitVersion}"
   testCompile "org.mockito:mockito-all:${mockitoVersion}"
-
+  testCompile "com.aestasit.infrastructure.winrm:groovy-winrm-mock:${winrmMockVersion}"
 }
 
 sourceSets {

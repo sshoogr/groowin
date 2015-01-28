@@ -25,7 +25,6 @@ import static com.aestasit.infrastructure.winrm.client.util.Constants.PROTOCOL_H
  * Configuration object holding options used for DSL configuration.
  *
  * @author Sergey Korenko
- *
  */
 class WinRMOptions extends CommonOptions {
 

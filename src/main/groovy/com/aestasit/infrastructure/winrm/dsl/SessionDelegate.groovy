@@ -244,10 +244,20 @@ class SessionDelegate {
   private CommandOutput doExec(String cmd, ExecOptions options, String[] arguments = []) {
     connect()
     String commandId = null
+
+
+    if(options.showCommand){
+      logCommand(cmd, arguments)
+    }
+
     catchExceptions(options, commandId) {
       commandId = client.executeCommand(cmd, arguments)
       return getCommandExecutionResults(options, commandId)
     }
+  }
+
+  void logCommand(String cmd, String[] arguments){
+    logger.info(cmd + ' ' + arguments.join(' '))
   }
 
   private CommandOutput catchExceptions(ExecOptions options, String commandId, Closure cl) {
@@ -558,7 +568,7 @@ class SessionDelegate {
     boolean dirExists = file.exists()
     if (!dirExists) {
       if (options.verbose) {
-        logger.info("Creating remote directory: $dstFile")
+        logger.info("> Creating remote directory: $dstFile")
       }
       exec('mkdir', dstFile)
     }
@@ -570,7 +580,7 @@ class SessionDelegate {
       StreamsCopyingProgressTracker copier = new StreamsCopyingProgressTracker(size, logger)
       if (showProgress) {
         def executor = Executors.newScheduledThreadPool(1)
-        task = executor.scheduleAtFixedRate(copier, 0, 1, TimeUnit.SECONDS)
+        task = executor.scheduleAtFixedRate(copier, 1, 3, TimeUnit.SECONDS)
       }
       copier.copyStreams(self, ins)
     } finally {
@@ -583,7 +593,7 @@ class SessionDelegate {
     long iteration = 0
     long length = 0
     Logger logger
-    long previousRate = 0
+    int previousRate = 0
 
     StreamsCopyingProgressTracker(long length, Logger logger) {
       this.length = length
@@ -604,16 +614,15 @@ class SessionDelegate {
       }
       self.flush()
 
-      logger.info "Copying finished."
+      logger.info("> Copying finished.")
     }
 
     @Override
     void run() {
-      if (iteration * 1024 < length && previousRate != (long) (iteration * 1024 * 100 / length)) {
+      if (iteration * 1024 < length && previousRate != (int) (iteration * 1024 * 100 / length)) {
         previousRate = iteration * 1024 * 100 / length
-        logger.info "${previousRate}% copied..."
+        logger.info("> ${previousRate}% copied...")
       }
     }
   }
 }
-

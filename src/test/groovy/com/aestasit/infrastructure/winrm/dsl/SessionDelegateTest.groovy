@@ -86,6 +86,9 @@ class SessionDelegateTest {
     sessionDelegate.copyStreams(file2.newOutputStream(), file1.newInputStream(), file1.length(), false)
 
     assertEquals(file1.length(), file2.length())
+
+    file1.delete()
+    file2.delete()
   }
 
   @Test

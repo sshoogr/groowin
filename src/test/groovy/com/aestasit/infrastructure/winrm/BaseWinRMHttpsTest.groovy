@@ -19,7 +19,6 @@ package com.aestasit.infrastructure.winrm
 import com.aestasit.infrastructure.winrm.mock.WinRMHostMock
 import org.junit.AfterClass
 import org.junit.BeforeClass
-import org.junit.Ignore
 import org.junit.Test
 
 import static com.aestasit.infrastructure.winrm.DefaultWinRM.execOptions
@@ -28,20 +27,19 @@ import static org.junit.Assert.assertEquals
 
 
 /**
- * Base class for testing static WinRM via HTTPS using groovy-winrm-mock project
+ * Base class for testing WinRM via HTTPS using groovy-winrm-mock project
  *
  * @author Sergey Korenko
  */
-@Ignore
 class BaseWinRMHttpsTest {
 
   @BeforeClass
   static void initClient() {
-    WinRMHostMock.startWinRMServer(5986)
+    WinRMHostMock.startWinRMServer()
 
-    WinRMHostMock.command('whoami', [] as String[], 0, 'win-l9po57hvelf', '')
-    WinRMHostMock.command('dur', [] as String[], 1, '', "mkdur is not recognized as an internal or external command,\noperable program or batch file.")
-    WinRMHostMock.command('rmdir', ['/S', '/Q', 'c:\\tempGroowin'] as String[], 1, '', "The system cannot find the path specified.")
+    WinRMHostMock.command('whoami', [] as String[], 0, 'win-l9po57hvelf', null)
+    WinRMHostMock.command('dur', [] as String[], 1, null, "mkdur is not recognized as an internal or external command,\noperable program or batch file.")
+    WinRMHostMock.command('rmdir', ['/S', '/Q', 'c:\\tempGroowin'] as String[], 1, null, "The system cannot find the path specified.")
   }
 
   @AfterClass
@@ -62,7 +60,7 @@ class BaseWinRMHttpsTest {
     }
   }
 
-  @Test
+  @Test(expected=WinRMException.class)
   void testUnknownCommand() throws Exception{
     remoteManagement('user:secret@localhost:5986') {
       def result = exec 'mkdr'

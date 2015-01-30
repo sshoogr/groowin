@@ -5,7 +5,7 @@
  * After copying the db dump it executes sql script via sql.exe. In case of error the current script copies MySQL script to the local host.
  */
 
-@Grab('com.aestasit.infrastructure.groowin:groowin:0.1.11-SNAPSHOT')
+@Grab('com.aestasit.infrastructure.groowin:groowin:0.1.10')
 
 import static com.aestasit.infrastructure.winrm.DefaultWinRM.*
 

@@ -328,12 +328,10 @@ class SessionDelegate {
 
     def outputStr = commandExecOutput.failed() ? commandExecOutput.errorOutput : commandExecOutput.output
     if (options.showOutput) {
-      println outputStr
+      logger.info(outputStr)
     }
-    logger.info(outputStr)
 
     new CommandOutput(commandExecOutput.exitStatus, outputStr, commandExecOutput.exception)
-
   }
 
   private void stopExecution(String commandId) {
@@ -614,7 +612,7 @@ class SessionDelegate {
       }
       self.flush()
 
-      logger.info("> Copying finished.")
+      logger.info("> ${length} bytes transferred")
     }
 
     @Override

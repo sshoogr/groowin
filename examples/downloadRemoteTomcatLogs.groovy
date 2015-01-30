@@ -4,7 +4,7 @@
  * and downloads created archive locally.
  */
 
-@Grab('com.aestasit.infrastructure.groowin:groowin:0.1.11-SNAPSHOT')
+@Grab('com.aestasit.infrastructure.groowin:groowin:0.1.10')
 
 import static com.aestasit.infrastructure.winrm.DefaultWinRM.*
 

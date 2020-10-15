@@ -1,76 +1,71 @@
+/*
+ * Copyright (C) 2011-2020 Aestas/IT
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 plugins {
-
-  id 'groovy'
-  id 'maven'
-  id 'eclipse'
-  id 'idea'
-  id 'project-report'
-
-  id "net.saliman.cobertura" version "2.2.5"
-  id "com.github.hierynomus.license" version "0.11.0"
-  id "org.ajoberstar.github-pages" version "0.10.0"
-  id "org.asciidoctor.gradle.asciidoctor" version "1.5.0"
-
+    id 'java-library'
+    id 'groovy'
+    id 'idea'
+    id 'org.ajoberstar.git-publish'
+    id 'org.kordamp.gradle.codenarc'
+    id 'org.kordamp.gradle.integration-test'
 }
 
-group = 'com.aestasit.infrastructure.groowin'
-version = '0.1.11-SNAPSHOT'
+config {
+    info {
+        name          = 'Groowin'
+        description   = 'A Groovy-based DSL for working with remote servers over WinRM protocol.'
+        inceptionYear = '2011'
+        tags          = ['winrm', 'client']
+    }
 
-apply from: 'gradle/repos.gradle'
-apply from: 'gradle/sonar.gradle'
-apply from: 'gradle/docs.gradle'
+    quality {
+        codenarc {
+            configFile = project.rootProject.file('src/conf/codenarc/codenarc.groovy')
+        }
+    }
+}
+
+repositories {
+    mavenLocal()
+}
 
 dependencies {
 
-  compile "org.codehaus.groovy:groovy-all:${groovyVersion}"
-  compile "org.slf4j:slf4j-api:${slf4jVersion}"
-  compile "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
-  compile "ch.qos.logback:logback-classic:${logbackVersion}"
-  compile "commons-io:commons-io:${commonsIOVersion}"
-  compile "commons-codec:commons-codec:${commonsCodecVersion}"
-  compile "com.aestasit.infrastructure.winrm:groovy-winrm-client:${winrmClientVersion}"
-  compile "jcifs:jcifs:${jcifsVersion}"
+  api "org.codehaus.groovy:groovy:${groovyVersion}"
+  api "org.slf4j:slf4j-api:${slf4jVersion}"
+  api "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+  api "ch.qos.logback:logback-classic:${logbackVersion}"
+  api "commons-io:commons-io:${commonsIOVersion}"
+  api "commons-codec:commons-codec:${commonsCodecVersion}"
+  api "com.aestasit.infrastructure.winrm:groovy-winrm-client:${winrmClientVersion}"
+  api "jcifs:jcifs:${jcifsVersion}"
 
-  testCompile "junit:junit:${junitVersion}"
-  testCompile "org.mockito:mockito-all:${mockitoVersion}"
-  testCompile "com.aestasit.infrastructure.winrm:groovy-winrm-mock:${winrmMockVersion}"
+  testImplementation "junit:junit:${junitVersion}"
+  testImplementation "org.codehaus.groovy:groovy:${groovyVersion}"
+  testImplementation "org.mockito:mockito-all:${mockitoVersion}"
+  testImplementation "com.aestasit.infrastructure.winrm:groovy-winrm-mock:${winrmMockVersion}"
 }
 
-sourceSets {
-  integrationTest {
-    compileClasspath += main.output + test.output
-    runtimeClasspath += main.output + test.output
-  }
+gitPublish {
+    repoUri = rootProject.extensions.findByName('config').info.links.scm
+    branch = 'gh-pages'
+    contents {
+        from(groovydoc.outputs.files) {
+            into 'docs/groovydoc'
+        }
+    }
 }
 
-configurations {
-  all*.exclude group: 'commons-logging'
-  all*.exclude group: 'log4j'
-  all*.exclude module: 'slf4j-simple'
-  all*.exclude module: 'xml-apis'
-  all*.exclude module: 'xmlParserApis'
-  all*.exclude module: 'xercesImpl'
-  integrationTestCompile.extendsFrom testCompile
-  integrationTestRuntime.extendsFrom testRuntime
-}
-
-task wrapper(type: Wrapper) {
-  gradleVersion = '2.1'
-}
-
-task integration(type: Test) {
-  description = "Run integration tests (located in src/integrationTest/groovy)."
-  testClassesDir = project.sourceSets.integrationTest.output.classesDir
-  classpath = project.sourceSets.integrationTest.runtimeClasspath
-}
-
-idea {
-  module {
-    testSourceDirs += file('src/integrationTest/groovy')
-  }
-}
-
-license {
-  header rootProject.file('HEADER')
-}
-
+gitPublishCommit.dependsOn(groovydoc)

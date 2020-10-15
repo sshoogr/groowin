@@ -1,1 +1,44 @@
+/*
+ * Copyright (C) 2011-2020 Aestas/IT
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+buildscript {
+    repositories {
+        gradlePluginPortal()
+        jcenter()
+        mavenLocal()
+    }
+    dependencies {
+        classpath "com.aestasit.sshoogr.gradle:sshoogr-parentbuild:$sshoogrBuildVersion"
+        classpath "org.kordamp.gradle:integrationtest-gradle-plugin:$kordampPluginVersion"
+        classpath "org.ajoberstar:gradle-git-publish:$gitPluginVersion"
+    }
+}
+apply plugin: 'com.aestasit.sshoogr.gradle.sshoogr-parentbuild'
+
 rootProject.name = 'groowin'
+
+enforce {
+    rule(enforcer.rules.BanDuplicateClasses) { r ->
+        r.enabled = false
+    }
+    rule(enforcer.rules.ForceDependencies) { r ->
+        r.dependencies.addAll "org.slf4j:slf4j-api:${slf4jVersion}",
+            "junit:junit:${junitVersion}",
+            "commons-io:commons-io:${commonsIOVersion}",
+            "commons-codec:commons-codec:${commonsCodecVersion}",
+            "commons-lang:commons-lang:${commonsLangVersion}"
+    }
+}
